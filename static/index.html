@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Menús de Campamento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+
+<body class="bg-slate-100 text-slate-800 font-sans">
+
+    <div id="app" class="flex h-screen overflow-hidden">
+
+        <aside class="w-64 bg-emerald-800 text-white flex flex-col">
+            <div class="p-5 text-xl font-bold border-b border-emerald-700">⛺ Menú Camp</div>
+            <nav class="flex-1 p-4 space-y-2">
+                <button @click="vistaActual = 'campamentos'; campSeleccionado = null" :class="tabClass('campamentos')">
+                    🏕️ Campamentos
+                </button>
+                <button @click="vistaActual = 'ingredientes'" :class="tabClass('ingredientes')">
+                    🥕 Ingredientes
+                </button>
+                <button @click="vistaActual = 'recetas'" :class="tabClass('recetas')">
+                    📖 Recetas
+                </button>
+            </nav>
+        </aside>
+
+        <main class="flex-1 p-8 overflow-y-auto">
+
+            <!-- INGREDIENTES -->
+            <section v-if="vistaActual === 'ingredientes'">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-2xl font-bold">Catálogo de Ingredientes</h1>
+                    <input v-model="busquedaIngrediente" placeholder="🔍 Buscar ingrediente..."
+                        class="border p-2 rounded w-64 shadow-sm">
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm mb-6 border border-slate-200">
+                    <h2 class="text-md font-semibold mb-3">{{ modoEditIng ? 'Editar Ingrediente' : 'Nuevo Ingrediente'
+                        }}</h2>
+                    <div class="grid grid-cols-4 gap-3">
+                        <input v-model="formIng.nombre" placeholder="Nombre" class="border p-2 rounded">
+                        <select v-model="formIng.unidad_medida" class="border p-2 rounded">
+                            <option value="kg">kg</option>
+                            <option value="g">g</option>
+                            <option value="l">l</option>
+                            <option value="ud">ud</option>
+                        </select>
+                        <input v-model.number="formIng.coste_unidad" type="number" step="0.01" placeholder="Coste (€)"
+                            class="border p-2 rounded">
+                        <div class="flex gap-2">
+                            <button @click="guardarIngrediente"
+                                class="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700 w-full">
+                                {{ modoEditIng ? 'Actualizar' : 'Añadir' }}
+                            </button>
+                            <button v-if="modoEditIng" @click="cancelarEditIng"
+                                class="bg-slate-300 px-3 py-2 rounded">✕</button>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="w-full bg-white rounded-lg border shadow-sm">
+                    <thead class="bg-slate-50 border-b">
+                        <tr>
+                            <th class="p-3 text-left">Nombre</th>
+                            <th class="p-3 text-left">Unidad</th>
+                            <th class="p-3 text-left">Coste</th>
+                            <th class="p-3 text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="i in ingredientesFiltrados" :key="i.id" class="border-b">
+                            <td class="p-3 font-medium">{{ i.nombre }}</td>
+                            <td class="p-3 text-slate-500">{{ i.unidad_medida }}</td>
+                            <td class="p-3 text-slate-500">{{ i.coste_unidad }} €</td>
+                            <td class="p-3 text-right space-x-2">
+                                <button @click="prepararEditIng(i)" class="text-blue-600 font-semibold text-sm">✏️
+                                    Editar</button>
+                                <button @click="borrarIngrediente(i.id)" class="text-red-600 font-semibold text-sm">🗑️
+                                    Borrar</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- RECETAS -->
+            <section v-if="vistaActual === 'recetas'">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-2xl font-bold">Libro de Recetas</h1>
+                    <input v-model="busquedaReceta" placeholder="🔍 Buscar receta..."
+                        class="border p-2 rounded w-64 shadow-sm">
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm mb-6 border border-slate-200">
+                    <h2 class="text-md font-semibold mb-3">{{ modoEditRec ? 'Editar Receta' : 'Nueva Receta' }}</h2>
+                    <div class="grid grid-cols-3 gap-3 mb-3">
+                        <input v-model="formRec.nombre" placeholder="Nombre receta"
+                            class="border p-2 rounded col-span-2">
+                        <input v-model.number="formRec.porciones_base" type="number" placeholder="Porciones Base"
+                            class="border p-2 rounded">
+                    </div>
+
+                    <div class="bg-slate-50 p-3 rounded mb-3 border space-y-2">
+                        <div v-for="(item, idx) in formRec.ingredientes" :key="idx" class="flex gap-2">
+                            <select v-model="item.ingrediente_id" class="border p-2 rounded flex-1">
+                                <option v-for="ing in ingredientes" :key="ing.id" :value="ing.id">{{ ing.nombre }} ({{
+                                    ing.unidad_medida }})</option>
+                            </select>
+                            <input v-model.number="item.cantidad_base" type="number" step="0.01" placeholder="Cantidad"
+                                class="border p-2 rounded w-32">
+                            <button @click="formRec.ingredientes.splice(idx,1)"
+                                class="text-red-500 font-bold px-2">✕</button>
+                        </div>
+                        <button @click="formRec.ingredientes.push({ingrediente_id: '', cantidad_base: 0})"
+                            class="text-xs text-emerald-700 font-bold">+ Añadir Ingrediente</button>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button @click="guardarReceta"
+                            class="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700">Guardar
+                            Receta</button>
+                        <button v-if="modoEditRec" @click="cancelarEditRec"
+                            class="bg-slate-300 px-3 py-2 rounded">Cancelar</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div v-for="r in recetasFiltradas" :key="r.id" class="bg-white p-4 rounded-lg border shadow-sm">
+                        <div class="flex justify-between items-start">
+                            <h3 class="font-bold text-lg text-emerald-950">{{ r.nombre }}</h3>
+                            <div class="space-x-2">
+                                <button @click="prepararEditRec(r)"
+                                    class="text-blue-600 text-xs font-semibold">✏️</button>
+                                <button @click="borrarReceta(r.id)"
+                                    class="text-red-600 text-xs font-semibold">🗑️</button>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-2">Porciones base: {{ r.porciones_base }}</p>
+                        <ul class="text-xs space-y-1 bg-slate-50 p-2 rounded border">
+                            <li v-for="ing in r.ingredientes">• {{ ing.ingrediente }}: {{ ing.cantidad_base }} {{
+                                ing.unidad }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CAMPAMENTOS -->
+            <section v-if="vistaActual === 'campamentos'">
+                <div v-if="!campSeleccionado">
+                    <div class="flex justify-between items-center mb-6">
+                        <h1 class="text-2xl font-bold">Campamentos</h1>
+                        <!-- CONTROLES DE BÚSQUEDA Y ORDENACIÓN -->
+                        <div class="flex gap-3">
+                            <input v-model="busquedaCampamento" placeholder="🔍 Buscar campamento..."
+                                class="border p-2 rounded w-64 shadow-sm bg-white">
+                            <select v-model="ordenCampamento" class="border p-2 rounded bg-white shadow-sm font-medium">
+                                <option value="fecha_desc">📅 Más recientes primero</option>
+                                <option value="fecha_asc">📅 Más antiguos primero</option>
+                                <option value="nombre_asc">🔤 Nombre (A-Z)</option>
+                                <option value="nombre_desc">🔤 Nombre (Z-A)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-xl border mb-6 flex gap-3 shadow-sm">
+                        <input v-model="nuevoCamp.nombre" placeholder="Nombre Campamento"
+                            class="border p-2 rounded flex-1">
+                        <input v-model="nuevoCamp.fecha_inicio" type="date" class="border p-2 rounded">
+                        <input v-model="nuevoCamp.fecha_fin" type="date" class="border p-2 rounded">
+                        <button @click="crearCampamento"
+                            class="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700 font-semibold">Crear</button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div v-for="c in campamentosFiltrados" :key="c.id"
+                            class="bg-white p-5 rounded-lg border shadow-sm flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold text-lg">{{ c.nombre }}</h3>
+                                <p class="text-xs text-slate-500">📅 {{ c.fecha_inicio }} al {{ c.fecha_fin }}</p>
+                            </div>
+                            <button @click="abrirCampamento(c)"
+                                class="bg-emerald-800 text-white px-3 py-1.5 rounded text-sm hover:bg-emerald-900">Entrar
+                                ➔</button>
+                        </div>
+                        <div v-if="campamentosFiltrados.length === 0"
+                            class="col-span-2 text-center text-slate-400 py-6">
+                            No se encontraron campamentos que coincidan con la búsqueda.
+                        </div>
+                    </div>
+                </div>
+
+                <div v-else>
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex items-center gap-3">
+                            <button @click="campSeleccionado = null"
+                                class="bg-slate-200 px-3 py-1 rounded text-sm hover:bg-slate-300">⬅ Volver</button>
+                            <h1 class="text-2xl font-bold">{{ campSeleccionado.nombre }}</h1>
+                        </div>
+                        <div class="flex gap-3">
+                            <a :href="`/api/campamentos/${campSeleccionado.id}/pdf/lista-compra`" target="_blank"
+                                class="bg-emerald-700 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-emerald-800">
+                                📄 PDF Lista Compra
+                            </a>
+                            <a :href="`/api/campamentos/${campSeleccionado.id}/pdf/cuadrante`" target="_blank"
+                                class="bg-slate-800 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-slate-900">
+                                📋 PDF Cuadrante Cocina
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- CUADRANTE GENERAL -->
+                    <div class="bg-white p-5 rounded-xl border shadow-sm mb-6">
+                        <h2 class="font-bold text-lg mb-3">📋 Cuadrante General de Menús</h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs border-collapse border border-slate-200">
+                                <thead class="bg-slate-100">
+                                    <tr>
+                                        <th class="border p-2">Fecha</th>
+                                        <th class="border p-2">Desayuno</th>
+                                        <th class="border p-2">Almuerzo</th>
+                                        <th class="border p-2">Comida</th>
+                                        <th class="border p-2">Merienda</th>
+                                        <th class="border p-2">Cena</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="row in cuadrante" :key="row.fecha" class="hover:bg-slate-50">
+                                        <td class="border p-2 font-bold bg-slate-50">{{ row.fecha }}</td>
+                                        <td class="border p-2">{{ row.tomas.Desayuno }}</td>
+                                        <td class="border p-2">{{ row.tomas.Almuerzo }}</td>
+                                        <td class="border p-2 font-semibold text-emerald-900">{{ row.tomas.Comida }}
+                                        </td>
+                                        <td class="border p-2">{{ row.tomas.Merienda }}</td>
+                                        <td class="border p-2 font-semibold text-emerald-900">{{ row.tomas.Cena }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- DÍA SELECCIONADO -->
+                    <div class="bg-white p-4 rounded-xl border mb-6 flex items-center gap-4">
+                        <label class="font-bold text-slate-700">Día de trabajo:</label>
+                        <select v-model="fechaSeleccionada" @change="cargarDatosDia"
+                            class="border p-2 rounded font-medium bg-slate-50">
+                            <option v-for="f in fechasDisponibles" :key="f" :value="f">Día: {{ f }}</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 mb-6">
+                        <!-- CENSO POR RAMAS -->
+                        <div class="bg-white p-5 rounded-xl border shadow-sm">
+                            <h2 class="font-bold text-lg mb-3">👥 Censo del Día ({{ fechaSeleccionada }})</h2>
+                            <table class="w-full text-sm">
+                                <thead class="bg-slate-50 border-b">
+                                    <tr>
+                                        <th class="p-2 text-left">Rama</th>
+                                        <th class="p-2 text-center">Niños</th>
+                                        <th class="p-2 text-center">Responsables</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="r in censoDia" :key="r.rama_id" class="border-b">
+                                        <td class="p-2 font-semibold">{{ r.nombre_rama }}</td>
+                                        <td class="p-2 text-center">
+                                            <input type="number" v-model.number="r.num_participantes" min="0"
+                                                class="border w-20 p-1 rounded text-center">
+                                        </td>
+                                        <td class="p-2 text-center">
+                                            <input type="number" v-model.number="r.num_responsables" min="0"
+                                                class="border w-20 p-1 rounded text-center">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <div class="flex gap-2 mt-4">
+                                <button @click="guardarCenso"
+                                    class="bg-emerald-600 text-white px-3 py-2 rounded text-sm w-1/2 font-semibold hover:bg-emerald-700">
+                                    💾 Guardar Día Solo
+                                </button>
+                                <button @click="copiarCensoATodos"
+                                    class="bg-blue-600 text-white px-3 py-2 rounded text-sm w-1/2 font-semibold hover:bg-blue-700">
+                                    📋 Aplicar Censo a TODOS los Días
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- PROGRAMAR COMIDA -->
+                        <div class="bg-white p-5 rounded-xl border shadow-sm">
+                            <h2 class="font-bold text-lg mb-3">➕ Programar Comida</h2>
+                            <div class="space-y-3 bg-slate-50 p-4 rounded border">
+                                <div>
+                                    <label class="text-xs font-bold text-slate-500">TOMA</label>
+                                    <select v-model="formComida.toma" class="border p-2 rounded w-full bg-white">
+                                        <option value="Desayuno">Desayuno</option>
+                                        <option value="Almuerzo">Almuerzo</option>
+                                        <option value="Comida">Comida</option>
+                                        <option value="Merienda">Merienda</option>
+                                        <option value="Cena">Cena</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-bold text-slate-500">DESTINO</label>
+                                    <select v-model="formComida.rama_id" class="border p-2 rounded w-full bg-white">
+                                        <option :value="null">🌐 Todo el Campamento (Comedor)</option>
+                                        <option v-for="rm in ramas" :key="rm.id" :value="rm.id">🎒 Solo {{ rm.nombre }}
+                                            (Picnic / Excursión)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-bold text-slate-500">RECETA</label>
+                                    <select v-model="formComida.receta_id" class="border p-2 rounded w-full bg-white">
+                                        <option v-for="rec in recetas" :key="rec.id" :value="rec.id">{{ rec.nombre }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <button @click="agendarComida"
+                                    class="bg-emerald-800 text-white px-4 py-2 rounded text-sm w-full font-semibold hover:bg-emerald-900">
+                                    Añadir al Cuadrante
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LISTA DE COMIDAS PROGRAMADAS -->
+                    <div class="bg-white p-5 rounded-xl border shadow-sm">
+                        <h2 class="font-bold text-lg mb-3">🗑️ Comidas Programadas el {{ fechaSeleccionada }}</h2>
+                        <div v-if="comidasProgramadasDia.length === 0" class="text-slate-400 text-sm py-2">
+                            No hay comidas programadas para este día.
+                        </div>
+                        <ul v-else class="divide-y border rounded-lg bg-slate-50">
+                            <li v-for="c in comidasProgramadasDia" :key="c.id"
+                                class="p-3 flex justify-between items-center">
+                                <div>
+                                    <span
+                                        class="bg-slate-200 text-slate-800 text-xs px-2 py-1 rounded font-bold uppercase mr-2">{{
+                                        c.toma }}</span>
+                                    <span class="font-bold text-emerald-950">{{ c.plato }}</span>
+                                    <span class="text-xs text-slate-500 ml-2">({{ c.destino }})</span>
+                                </div>
+                                <button @click="borrarComida(c.id)"
+                                    class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs font-bold hover:bg-red-200">
+                                    🗑️ Eliminar
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            data() {
+                return {
+                    vistaActual: 'campamentos',
+                    campamentos: [], ingredientes: [], recetas: [], ramas: [],
+                    busquedaIngrediente: '', busquedaReceta: '',
+                    busquedaCampamento: '',
+                    ordenCampamento: 'fecha_desc', // Por defecto fecha más reciente a más antigua
+                    formIng: { id: null, nombre: '', unidad_medida: 'kg', coste_unidad: 0.0 },
+                    modoEditIng: false,
+                    formRec: { id: null, nombre: '', porciones_base: 10, es_item_picnic: false, ingredientes: [] },
+                    modoEditRec: false,
+                    nuevoCamp: { nombre: '', fecha_inicio: '', fecha_fin: '' },
+                    campSeleccionado: null,
+                    fechasDisponibles: [],
+                    fechaSeleccionada: '',
+                    cuadrante: [],
+                    censoDia: [],
+                    comidasProgramadasDia: [],
+                    formComida: { toma: 'Comida', receta_id: '', rama_id: null }
+                }
+            },
+            computed: {
+                ingredientesFiltrados() {
+                    return this.ingredientes.filter(i => i.nombre.toLowerCase().includes(this.busquedaIngrediente.toLowerCase()))
+                },
+                recetasFiltradas() {
+                    return this.recetas.filter(r => r.nombre.toLowerCase().includes(this.busquedaReceta.toLowerCase()))
+                },
+                campamentosFiltrados() {
+                    let res = this.campamentos.filter(c =>
+                        c.nombre.toLowerCase().includes(this.busquedaCampamento.toLowerCase())
+                    );
+                    return res.sort((a, b) => {
+                        if (this.ordenCampamento === 'fecha_desc') {
+                            return (b.fecha_inicio || '').localeCompare(a.fecha_inicio || '');
+                        } else if (this.ordenCampamento === 'fecha_asc') {
+                            return (a.fecha_inicio || '').localeCompare(b.fecha_inicio || '');
+                        } else if (this.ordenCampamento === 'nombre_asc') {
+                            return a.nombre.localeCompare(b.nombre);
+                        } else if (this.ordenCampamento === 'nombre_desc') {
+                            return b.nombre.localeCompare(a.nombre);
+                        }
+                        return 0;
+                    });
+                }
+            },
+            methods: {
+                tabClass(tab) {
+                    return ['w-full text-left px-4 py-2.5 rounded-lg font-medium transition', this.vistaActual === tab ? 'bg-emerald-900 text-white' : 'text-emerald-100 hover:bg-emerald-700']
+                },
+                async cargarDatos() {
+                    const [c, i, r, rm] = await Promise.all([
+                        fetch('/api/campamentos').then(res => res.json()),
+                        fetch('/api/ingredientes').then(res => res.json()),
+                        fetch('/api/recetas').then(res => res.json()),
+                        fetch('/api/ramas').then(res => res.json())
+                    ]);
+                    this.campamentos = c; this.ingredientes = i; this.recetas = r; this.ramas = rm;
+                },
+                async guardarIngrediente() {
+                    const url = this.modoEditIng ? `/api/ingredientes/${this.formIng.id}` : '/api/ingredientes';
+                    const method = this.modoEditIng ? 'PUT' : 'POST';
+                    await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.formIng) });
+                    this.cancelarEditIng(); this.cargarDatos();
+                },
+                prepararEditIng(i) { this.formIng = { ...i }; this.modoEditIng = true; },
+                cancelarEditIng() { this.formIng = { id: null, nombre: '', unidad_medida: 'kg', coste_unidad: 0.0 }; this.modoEditIng = false; },
+                async borrarIngrediente(id) {
+                    if (confirm("¿Eliminar ingrediente?")) { await fetch(`/api/ingredientes/${id}`, { method: 'DELETE' }); this.cargarDatos(); }
+                },
+                prepararEditRec(r) {
+                    this.modoEditRec = true;
+                    const ings = r.ingredientes.map(i => {
+                        const objIng = this.ingredientes.find(x => x.nombre === i.ingrediente);
+                        return { ingrediente_id: objIng ? objIng.id : '', cantidad_base: i.cantidad_base };
+                    });
+                    this.formRec = { id: r.id, nombre: r.nombre, porciones_base: r.porciones_base, es_item_picnic: r.es_item_picnic, ingredientes: ings };
+                },
+                cancelarEditRec() { this.formRec = { id: null, nombre: '', porciones_base: 10, es_item_picnic: false, ingredientes: [] }; this.modoEditRec = false; },
+                async guardarReceta() {
+                    const url = this.modoEditRec ? `/api/recetas/${this.formRec.id}` : '/api/recetas';
+                    const method = this.modoEditRec ? 'PUT' : 'POST';
+                    await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.formRec) });
+                    this.cancelarEditRec(); this.cargarDatos();
+                },
+                async borrarReceta(id) {
+                    if (confirm("¿Eliminar receta?")) { await fetch(`/api/recetas/${id}`, { method: 'DELETE' }); this.cargarDatos(); }
+                },
+                async crearCampamento() {
+                    await fetch('/api/campamentos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.nuevoCamp) });
+                    this.nuevoCamp = { nombre: '', fecha_inicio: '', fecha_fin: '' }; this.cargarDatos();
+                },
+                async abrirCampamento(c) {
+                    this.campSeleccionado = c;
+                    this.fechasDisponibles = await fetch(`/api/campamentos/${c.id}/dias`).then(r => r.json());
+                    this.fechaSeleccionada = this.fechasDisponibles[0];
+                    this.cargarCuadrante();
+                    this.cargarDatosDia();
+                },
+                async cargarCuadrante() {
+                    this.cuadrante = await fetch(`/api/campamentos/${this.campSeleccionado.id}/cuadrante`).then(r => r.json());
+                },
+                async cargarDatosDia() {
+                    if (!this.fechaSeleccionada) return;
+                    const [resCenso, resComidas] = await Promise.all([
+                        fetch(`/api/campamentos/${this.campSeleccionado.id}/censo/${this.fechaSeleccionada}`).then(r => r.json()),
+                        fetch(`/api/campamentos/${this.campSeleccionado.id}/comidas_dia/${this.fechaSeleccionada}`).then(r => r.json())
+                    ]);
+
+                    this.censoDia = this.ramas.map(rama => {
+                        const existente = resCenso.find(x => Number(x.rama_id) === Number(rama.id));
+                        return {
+                            rama_id: Number(rama.id),
+                            nombre_rama: rama.nombre,
+                            num_participantes: existente ? Number(existente.num_participantes) : 0,
+                            num_responsables: existente ? Number(existente.num_responsables) : 0,
+                            esta_de_salida: existente ? Boolean(existente.esta_de_salida) : false
+                        };
+                    });
+
+                    this.comidasProgramadasDia = resComidas;
+                },
+                sanitizarCenso() {
+                    return this.censoDia.map(item => ({
+                        rama_id: Number(item.rama_id),
+                        num_participantes: Number(item.num_participantes) || 0,
+                        num_responsables: Number(item.num_responsables) || 0,
+                        esta_de_salida: Boolean(item.esta_de_salida)
+                    }));
+                },
+                async guardarCenso() {
+                    const censoLimpio = this.sanitizarCenso();
+                    try {
+                        const res = await fetch(`/api/campamentos/${this.campSeleccionado.id}/censo/${this.fechaSeleccionada}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(censoLimpio)
+                        });
+                        if (res.ok) {
+                            alert("✓ Censo guardado para el día " + this.fechaSeleccionada);
+                            await this.cargarDatosDia();
+                        } else {
+                            const err = await res.json();
+                            alert("❌ Error backend: " + JSON.stringify(err.detail || err));
+                        }
+                    } catch (err) {
+                        alert("❌ Error de comunicación con el servidor.");
+                    }
+                },
+                async copiarCensoATodos() {
+                    if (confirm("¿Seguro que quieres aplicar este censo a TODOS los días del campamento? Se sobreescribirán los registros de las demás fechas.")) {
+                        const censoLimpio = this.sanitizarCenso();
+                        try {
+                            const res = await fetch(`/api/campamentos/${this.campSeleccionado.id}/copiar-censo-todos`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(censoLimpio)
+                            });
+                            const data = await res.json();
+                            if (res.ok) {
+                                alert(`✓ Censo aplicado con éxito a todos los días (${data.filas_afectadas} registros actualizados).`);
+                                await this.cargarDatosDia();
+                            } else {
+                                alert("❌ Error del servidor: " + JSON.stringify(data.detail || data));
+                            }
+                        } catch (err) {
+                            alert("❌ Error al enviar datos al servidor.");
+                        }
+                    }
+                },
+                async agendarComida() {
+                    if (!this.formComida.receta_id) return;
+                    await fetch(`/api/campamentos/${this.campSeleccionado.id}/comidas/${this.fechaSeleccionada}`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.formComida)
+                    });
+                    this.formComida.receta_id = '';
+                    this.cargarCuadrante();
+                    this.cargarDatosDia();
+                },
+                async borrarComida(id) {
+                    if (confirm("¿Seguro que quieres eliminar esta comida del cuadrante?")) {
+                        await fetch(`/api/campamentos/${this.campSeleccionado.id}/comidas/${id}`, { method: 'DELETE' });
+                        this.cargarCuadrante();
+                        this.cargarDatosDia();
+                    }
+                }
+            },
+            mounted() { this.cargarDatos(); }
+        }).mount('#app')
+    </script>
+</body>
+
+</html>

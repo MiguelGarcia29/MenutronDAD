@@ -1,0 +1,110 @@
+2026-08-27 10:27:34,698 [INFO] Base de datos inicializada correctamente.
+2026-08-27 10:27:41,345 [INFO] [LOG] Guardando censo diario en Campamento ID 2 para fecha copiar-a-todos
+2026-08-27 10:27:41,347 [INFO] [LOG] Censo guardado con éxito para el día copiar-a-todos
+2026-08-27 10:28:04,806 [INFO] [LOG] Guardando censo diario en Campamento ID 2 para fecha 2026-08-12
+2026-08-27 10:28:04,808 [INFO] [LOG] Censo guardado con éxito para el día 2026-08-12
+2026-08-27 10:28:10,072 [INFO] [LOG] Guardando censo diario en Campamento ID 2 para fecha copiar-a-todos
+2026-08-27 10:28:10,073 [INFO] [LOG] Censo guardado con éxito para el día copiar-a-todos
+2026-08-27 10:28:12,349 [INFO] [LOG] Guardando censo diario en Campamento ID 2 para fecha 2026-08-12
+2026-08-27 10:28:12,351 [INFO] [LOG] Censo guardado con éxito para el día 2026-08-12
+2026-08-27 10:28:29,408 [INFO] [LOG] Guardando censo diario en Campamento ID 2 para fecha copiar-a-todos
+2026-08-27 10:28:29,410 [INFO] [LOG] Censo guardado con éxito para el día copiar-a-todos
+2026-08-27 10:29:40,056 [INFO] Base de datos inicializada correctamente.
+2026-08-27 10:29:46,863 [INFO] [LOG] Guardando censo diario en Campamento ID 2 para fecha copiar-a-todos
+2026-08-27 10:29:46,866 [INFO] [LOG] Censo guardado con éxito para el día copiar-a-todos
+2026-08-27 10:29:59,690 [INFO] [LOG] Guardando censo diario en Campamento ID 2 para fecha copiar-a-todos
+2026-08-27 10:29:59,692 [INFO] [LOG] Censo guardado con éxito para el día copiar-a-todos
+2026-08-27 10:31:50,818 [INFO] Base de datos inicializada correctamente.
+2026-08-27 10:31:59,415 [INFO] [LOG] Iniciando copia masiva de censo para Campamento ID 2
+2026-08-27 10:31:59,416 [INFO] [LOG] Aplicando censo a 5 días (2026-08-12 -> 2026-08-16)
+2026-08-27 10:31:59,416 [INFO] [LOG] Eliminados 14 registros antiguos de censo.
+2026-08-27 10:31:59,417 [INFO] [LOG] Éxito: Se insertaron 35 filas en total.
+2026-08-27 10:35:03,135 [INFO] Base de datos inicializada correctamente.
+2026-08-27 10:35:20,765 [INFO] [LOG] Iniciando copia masiva de censo para Campamento ID 1
+2026-08-27 10:35:20,765 [INFO] [LOG] Aplicando censo a 3 días (2026-08-28 -> 2026-08-30)
+2026-08-27 10:35:20,766 [INFO] [LOG] Eliminados 21 registros antiguos de censo.
+2026-08-27 10:35:20,766 [INFO] [LOG] Éxito: Se insertaron 21 filas en total.
+2026-08-27 10:42:13,138 [INFO] Base de datos inicializada correctamente.
+2026-08-27 10:42:18,902 [INFO] Base de datos inicializada correctamente.
+2026-08-27 10:44:02,902 [INFO] Base de datos inicializada correctamente.
+2026-08-27 10:47:16,244 [INFO] Base de datos inicializada correctamente.
+2026-08-27 10:47:20,754 [INFO] Base de datos inicializada correctamente.
+2026-08-27 10:47:37,559 [INFO] [LOG] Agendando comida el 2026-07-15 (Toma: Comida)
+2026-08-27 10:47:42,994 [INFO] [LOG] Eliminando comida ID 2
+2026-08-27 10:47:44,656 [INFO] [LOG] Eliminando comida ID 1
+2026-08-27 10:47:47,753 [INFO] [LOG] Eliminando comida ID 3
+2026-08-27 10:51:14,138 [INFO] Base de datos inicializada correctamente.
+2026-08-27 10:51:17,269 [INFO] Base de datos inicializada correctamente.
+2026-08-27 10:53:33,486 [INFO] Base de datos inicializada correctamente.
+2026-08-27 10:53:45,738 [INFO] Base de datos inicializada correctamente.
+2026-08-27 10:53:49,703 [INFO] Base de datos inicializada correctamente.
+2026-08-27 10:55:21,906 [INFO] Base de datos inicializada correctamente.
+2026-08-27 10:55:45,149 [INFO] Base de datos inicializada correctamente.
+2026-08-27 10:57:09,076 [INFO] Base de datos inicializada correctamente.
+2026-08-27 10:57:29,101 [INFO] Base de datos inicializada correctamente.
+2026-08-27 10:57:31,607 [INFO] Base de datos inicializada correctamente.
+2026-08-27 10:57:45,980 [INFO] [LOG] Iniciando copia masiva de censo para Campamento ID 1
+2026-08-27 10:57:45,981 [INFO] [LOG] Aplicando censo a 6 días (2026-07-15 -> 2026-07-20)
+2026-08-27 10:57:45,981 [INFO] [LOG] Eliminados 42 registros antiguos de censo.
+2026-08-27 10:57:45,982 [INFO] [LOG] Éxito: Se insertaron 42 filas en total.
+2026-08-27 10:58:17,598 [INFO] [LOG] Agendando comida el 2026-07-15 (Toma: Comida)
+2026-08-27 10:58:21,752 [INFO] [LOG] Eliminando comida ID 5
+2026-08-27 10:58:24,087 [INFO] [LOG] Eliminando comida ID 3
+2026-08-27 10:59:53,399 [INFO] Base de datos inicializada correctamente.
+2026-08-27 11:00:03,345 [INFO] Base de datos inicializada correctamente.
+2026-08-27 11:02:42,662 [INFO] Base de datos inicializada correctamente.
+2026-08-27 11:02:48,042 [INFO] Base de datos inicializada correctamente.
+2026-08-27 11:03:12,971 [INFO] Creando campamento: 123
+2026-08-27 11:06:46,401 [INFO] Base de datos inicializada correctamente.
+2026-08-27 11:06:55,352 [ERROR] Error generando PDF de lista de compra: "Style 'Subtitle' not found in stylesheet"
+Traceback (most recent call last):
+  File "C:\Users\migue\Desktop\camp-menu-app\venv\Lib\site-packages\reportlab\lib\styles.py", line 230, in __getitem__
+    return self.byAlias[key]
+           ~~~~~~~~~~~~^^^^^
+KeyError: 'Subtitle'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\migue\Desktop\camp-menu-app\venv\Lib\site-packages\reportlab\lib\styles.py", line 233, in __getitem__
+    return self.byName[key]
+           ~~~~~~~~~~~^^^^^
+KeyError: 'Subtitle'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\migue\Desktop\camp-menu-app\backend\main.py", line 378, in pdf_lista_compra
+    elements.append(Paragraph(f"Campamento: {camp.nombre} ({camp.fecha_inicio} al {camp.fecha_fin})", styles['Subtitle']))
+                                                                                                      ~~~~~~^^^^^^^^^^^^
+  File "C:\Users\migue\Desktop\camp-menu-app\venv\Lib\site-packages\reportlab\lib\styles.py", line 235, in __getitem__
+    raise KeyError("Style '%s' not found in stylesheet" % key)
+KeyError: "Style 'Subtitle' not found in stylesheet"
+2026-08-27 11:06:58,028 [ERROR] Error generando PDF de cuadrante: "Style 'Subtitle' not found in stylesheet"
+Traceback (most recent call last):
+  File "C:\Users\migue\Desktop\camp-menu-app\venv\Lib\site-packages\reportlab\lib\styles.py", line 230, in __getitem__
+    return self.byAlias[key]
+           ~~~~~~~~~~~~^^^^^
+KeyError: 'Subtitle'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\migue\Desktop\camp-menu-app\venv\Lib\site-packages\reportlab\lib\styles.py", line 233, in __getitem__
+    return self.byName[key]
+           ~~~~~~~~~~~^^^^^
+KeyError: 'Subtitle'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\migue\Desktop\camp-menu-app\backend\main.py", line 438, in pdf_cuadrante
+    elements.append(Paragraph(f"Campamento: {camp.nombre} ({camp.fecha_inicio} al {camp.fecha_fin})", styles['Subtitle']))
+                                                                                                      ~~~~~~^^^^^^^^^^^^
+  File "C:\Users\migue\Desktop\camp-menu-app\venv\Lib\site-packages\reportlab\lib\styles.py", line 235, in __getitem__
+    raise KeyError("Style '%s' not found in stylesheet" % key)
+KeyError: "Style 'Subtitle' not found in stylesheet"
+2026-08-27 11:08:45,021 [INFO] Base de datos inicializada correctamente.
+2026-08-27 11:11:10,701 [INFO] Base de datos inicializada correctamente.
+2026-08-27 11:11:30,660 [INFO] Base de datos inicializada correctamente.
+2026-08-27 11:17:28,635 [INFO] Base de datos inicializada correctamente.
