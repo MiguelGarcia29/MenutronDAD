@@ -108,3 +108,84 @@ KeyError: "Style 'Subtitle' not found in stylesheet"
 2026-08-27 11:11:10,701 [INFO] Base de datos inicializada correctamente.
 2026-08-27 11:11:30,660 [INFO] Base de datos inicializada correctamente.
 2026-08-27 11:17:28,635 [INFO] Base de datos inicializada correctamente.
+2026-09-01 22:35:28,542 [INFO] Base de datos inicializada correctamente.
+2026-09-01 22:36:41,780 [INFO] Base de datos inicializada correctamente.
+2026-09-01 22:38:17,859 [INFO] Base de datos inicializada correctamente.
+2026-09-01 22:39:39,750 [INFO] Base de datos inicializada correctamente.
+2026-09-01 22:42:19,663 [INFO] Base de datos inicializada correctamente.
+2026-09-01 22:43:11,710 [INFO] [LOG] Iniciando copia masiva de censo para Campamento ID 1
+2026-09-01 22:44:18,530 [INFO] Base de datos inicializada correctamente.
+2026-09-01 22:48:13,137 [INFO] Base de datos inicializada correctamente.
+2026-09-01 22:49:30,077 [INFO] Creando receta: 13123
+2026-09-01 22:49:34,780 [INFO] Creando receta: q23231
+2026-09-01 22:50:25,823 [INFO] Base de datos inicializada correctamente.
+2026-09-01 22:50:39,919 [INFO] Base de datos inicializada correctamente.
+2026-09-01 22:52:39,840 [INFO] Base de datos inicializada correctamente.
+2026-09-01 22:53:00,172 [INFO] Base de datos inicializada correctamente.
+2026-09-01 22:53:12,875 [INFO] Creando receta: 1231232
+2026-09-01 22:55:38,598 [INFO] Base de datos inicializada correctamente.
+2026-09-01 22:55:38,633 [INFO] Inicializando estructura de base de datos...
+2026-09-01 22:55:38,638 [INFO] Base de datos inicializada correctamente.
+2026-09-01 22:55:38,639 [INFO] Limpiando datos antiguos...
+2026-09-01 22:55:38,639 [INFO] Insertando ingredientes...
+2026-09-01 22:55:38,641 [INFO] Insertando recetas y sus proporciones...
+2026-09-01 22:55:38,642 [INFO] Creando campamento de prueba y censo...
+2026-09-01 22:55:38,644 [INFO] Generando menú en el cuadrante...
+2026-09-01 22:55:38,651 [INFO] ¡Base de datos 'camp_menu.db' poblada con éxito con datos de prueba!
+2026-09-01 22:55:43,912 [INFO] Base de datos inicializada correctamente.
+2026-09-01 22:59:17,153 [INFO] Base de datos inicializada correctamente.
+2026-09-01 22:59:17,191 [INFO] Base de datos inicializada correctamente.
+2026-09-01 22:59:20,848 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:00:48,431 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:00:58,926 [INFO] Creando campamento: 123
+2026-09-01 23:01:12,889 [INFO] [LOG] Iniciando copia masiva de censo para Campamento ID 1
+2026-09-01 23:01:22,557 [INFO] Creando ingrediente: Arroz
+2026-09-01 23:01:31,141 [INFO] Creando receta: Arroz
+2026-09-01 23:02:31,252 [INFO] Creando campamento: wew
+2026-09-01 23:03:03,490 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:04:01,182 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:04:05,462 [INFO] Eliminando campamento ID 2
+2026-09-01 23:04:27,804 [INFO] Creando receta: Arroz con tomate
+2026-09-01 23:04:40,843 [INFO] Creando campamento: 13232
+2026-09-01 23:06:58,389 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:06:58,427 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:07:05,645 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:14:25,140 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:19:36,244 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:22:40,584 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:27:12,886 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:28:16,929 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:31:10,157 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:33:30,594 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:33:30,636 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:33:36,438 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:36:17,486 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:36:26,354 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:36:36,170 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:39:32,163 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:40:57,876 [INFO] Creando campamento: VIaje
+2026-09-01 23:45:21,497 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:49:02,817 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:51:27,507 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:51:27,550 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:51:32,083 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:59:39,586 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:59:39,635 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:59:44,514 [INFO] Base de datos inicializada correctamente.
+2026-09-01 23:59:44,555 [INFO] Base de datos inicializada correctamente.
+2026-09-02 00:00:03,143 [INFO] Base de datos inicializada correctamente.
+2026-09-02 00:00:03,187 [INFO] Base de datos inicializada correctamente.
+2026-09-02 00:00:21,272 [INFO] Base de datos inicializada correctamente.
+2026-09-02 00:00:21,311 [INFO] Base de datos inicializada correctamente.
+2026-09-02 00:00:31,466 [INFO] Base de datos inicializada correctamente.
+2026-09-02 00:00:57,609 [INFO] Base de datos inicializada correctamente.
+2026-09-02 00:01:12,597 [INFO] Base de datos inicializada correctamente.
+2026-09-02 00:01:42,366 [INFO] Base de datos inicializada correctamente.
+2026-09-02 00:01:42,417 [INFO] Base de datos inicializada correctamente.
+2026-09-02 00:01:46,061 [INFO] Base de datos inicializada correctamente.
+2026-09-02 00:03:03,071 [INFO] Base de datos inicializada correctamente.
+2026-09-02 00:03:03,111 [INFO] Base de datos inicializada correctamente.
+2026-09-02 00:04:18,938 [INFO] Base de datos inicializada correctamente.
+2026-09-02 00:04:18,980 [INFO] Base de datos inicializada correctamente.
+2026-09-02 00:04:23,245 [INFO] Base de datos inicializada correctamente.
+2026-09-02 00:08:12,868 [INFO] Base de datos inicializada correctamente.

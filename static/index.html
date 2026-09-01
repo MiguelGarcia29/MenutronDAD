@@ -3,552 +3,1353 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Gestión de Menús de Campamento</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Menús para Campamentos</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .tab-btn.active {
+            border-bottom: 3px solid #059669;
+            color: #059669;
+            font-weight: bold;
+        }
+    </style>
 </head>
 
-<body class="bg-slate-100 text-slate-800 font-sans">
+<body class="bg-slate-100 text-slate-800">
 
-    <div id="app" class="flex h-screen overflow-hidden">
+    <div class="max-w-7xl mx-auto p-4 sm:p-6">
 
-        <aside class="w-64 bg-emerald-800 text-white flex flex-col">
-            <div class="p-5 text-xl font-bold border-b border-emerald-700">⛺ Menú Camp</div>
-            <nav class="flex-1 p-4 space-y-2">
-                <button @click="vistaActual = 'campamentos'; campSeleccionado = null" :class="tabClass('campamentos')">
-                    🏕️ Campamentos
-                </button>
-                <button @click="vistaActual = 'ingredientes'" :class="tabClass('ingredientes')">
-                    🥕 Ingredientes
-                </button>
-                <button @click="vistaActual = 'recetas'" :class="tabClass('recetas')">
-                    📖 Recetas
-                </button>
-            </nav>
-        </aside>
+        <!-- ENCABEZADO -->
+        <header class="bg-white shadow-md rounded-xl p-5 mb-6 flex justify-between items-center flex-wrap gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-emerald-800">⛺ Gestor de Menús y Cocina</h1>
+                <p class="text-sm text-slate-500">Planificación de censos, cuadrantes y listas de compra por días</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <select id="selectCampamento" onchange="cambiarCampamentoDesdeSelect()"
+                    class="border border-slate-300 rounded-lg p-2 text-sm bg-slate-50 font-semibold focus:ring-2 focus:ring-emerald-500">
+                    <option value="">-- Selecciona un Campamento --</option>
+                </select>
+                <button onclick="abrirModalCampamento()"
+                    class="bg-emerald-700 hover:bg-emerald-800 text-white text-sm px-3 py-2 rounded-lg font-medium">+
+                    Nuevo</button>
+            </div>
+        </header>
 
-        <main class="flex-1 p-8 overflow-y-auto">
+        <!-- NAVEGACIÓN -->
+        <nav class="flex overflow-x-auto border-b border-slate-300 mb-6 bg-white rounded-t-xl px-4">
+            <button onclick="switchTab('tab-campamentos')" id="btn-tab-campamentos"
+                class="tab-btn active py-3 px-5 text-slate-600 hover:text-emerald-700 whitespace-nowrap">⛺
+                Campamentos</button>
+            <button onclick="switchTab('tab-censo')" id="btn-tab-censo"
+                class="tab-btn py-3 px-5 text-slate-600 hover:text-emerald-700 whitespace-nowrap">📋 Censo
+                Diario</button>
+            <button onclick="switchTab('tab-cuadrante')" id="btn-tab-cuadrante"
+                class="tab-btn py-3 px-5 text-slate-600 hover:text-emerald-700 whitespace-nowrap">🗓️ Cuadrante y
+                Menús</button>
+            <button onclick="switchTab('tab-ingredientes')" id="btn-tab-ingredientes"
+                class="tab-btn py-3 px-5 text-slate-600 hover:text-emerald-700 whitespace-nowrap">🥦
+                Ingredientes</button>
+            <button onclick="switchTab('tab-recetas')" id="btn-tab-recetas"
+                class="tab-btn py-3 px-5 text-slate-600 hover:text-emerald-700 whitespace-nowrap">📖 Recetas</button>
+        </nav>
 
-            <!-- INGREDIENTES -->
-            <section v-if="vistaActual === 'ingredientes'">
-                <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-2xl font-bold">Catálogo de Ingredientes</h1>
-                    <input v-model="busquedaIngrediente" placeholder="🔍 Buscar ingrediente..."
-                        class="border p-2 rounded w-64 shadow-sm">
+        <!-- PESTAÑA 0: CAMPAMENTOS -->
+        <section id="tab-campamentos" class="tab-content bg-white p-6 rounded-xl shadow-sm">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-700">Selección y Buscador de Campamentos</h2>
+                    <p class="text-sm text-slate-500">Elige un campamento para comenzar a gestionar el censo y los
+                        menús.</p>
                 </div>
+                <button onclick="abrirModalCampamento()"
+                    class="bg-emerald-700 hover:bg-emerald-800 text-white font-medium px-4 py-2 rounded-lg text-sm shadow">+
+                    Crear Campamento</button>
+            </div>
 
-                <div class="bg-white p-5 rounded-xl shadow-sm mb-6 border border-slate-200">
-                    <h2 class="text-md font-semibold mb-3">{{ modoEditIng ? 'Editar Ingrediente' : 'Nuevo Ingrediente'
-                        }}</h2>
-                    <div class="grid grid-cols-4 gap-3">
-                        <input v-model="formIng.nombre" placeholder="Nombre" class="border p-2 rounded">
-                        <select v-model="formIng.unidad_medida" class="border p-2 rounded">
-                            <option value="kg">kg</option>
-                            <option value="g">g</option>
-                            <option value="l">l</option>
-                            <option value="ud">ud</option>
-                        </select>
-                        <input v-model.number="formIng.coste_unidad" type="number" step="0.01" placeholder="Coste (€)"
-                            class="border p-2 rounded">
-                        <div class="flex gap-2">
-                            <button @click="guardarIngrediente"
-                                class="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700 w-full">
-                                {{ modoEditIng ? 'Actualizar' : 'Añadir' }}
-                            </button>
-                            <button v-if="modoEditIng" @click="cancelarEditIng"
-                                class="bg-slate-300 px-3 py-2 rounded">✕</button>
-                        </div>
+            <div class="mb-6">
+                <input type="text" id="searchCampamento" oninput="renderCampamentos()"
+                    placeholder="🔍 Buscar campamento por nombre..."
+                    class="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-slate-50 focus:ring-2 focus:ring-emerald-500">
+            </div>
+
+            <div id="gridCampamentos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </section>
+
+        <!-- PESTAÑA 1: CENSO DIARIO -->
+        <section id="tab-censo" class="tab-content hidden bg-white p-6 rounded-xl shadow-sm">
+            <div id="censoNoCamp"
+                class="text-center py-12 bg-slate-50 border border-dashed border-slate-300 rounded-xl">
+                <p class="text-4xl mb-2">⛺</p>
+                <h3 class="text-lg font-bold text-slate-700">Ningún campamento seleccionado</h3>
+                <p class="text-sm text-slate-500 mb-4">Selecciona uno en el buscador para ver y modificar el censo
+                    diario.</p>
+                <button onclick="switchTab('tab-campamentos')"
+                    class="bg-emerald-700 text-white text-sm px-4 py-2 rounded-lg font-medium">Ir a Buscar
+                    Campamentos</button>
+            </div>
+
+            <div id="censoContenido" class="hidden">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-700">Censo de Participantes y Excursiones</h2>
+                        <p class="text-sm text-slate-500">Marca las ramas de salida para habilitar la selección de tomas
+                            ausentes.</p>
                     </div>
-                </div>
-
-                <table class="w-full bg-white rounded-lg border shadow-sm">
-                    <thead class="bg-slate-50 border-b">
-                        <tr>
-                            <th class="p-3 text-left">Nombre</th>
-                            <th class="p-3 text-left">Unidad</th>
-                            <th class="p-3 text-left">Coste</th>
-                            <th class="p-3 text-right">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="i in ingredientesFiltrados" :key="i.id" class="border-b">
-                            <td class="p-3 font-medium">{{ i.nombre }}</td>
-                            <td class="p-3 text-slate-500">{{ i.unidad_medida }}</td>
-                            <td class="p-3 text-slate-500">{{ i.coste_unidad }} €</td>
-                            <td class="p-3 text-right space-x-2">
-                                <button @click="prepararEditIng(i)" class="text-blue-600 font-semibold text-sm">✏️
-                                    Editar</button>
-                                <button @click="borrarIngrediente(i.id)" class="text-red-600 font-semibold text-sm">🗑️
-                                    Borrar</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
-
-            <!-- RECETAS -->
-            <section v-if="vistaActual === 'recetas'">
-                <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-2xl font-bold">Libro de Recetas</h1>
-                    <input v-model="busquedaReceta" placeholder="🔍 Buscar receta..."
-                        class="border p-2 rounded w-64 shadow-sm">
-                </div>
-
-                <div class="bg-white p-5 rounded-xl shadow-sm mb-6 border border-slate-200">
-                    <h2 class="text-md font-semibold mb-3">{{ modoEditRec ? 'Editar Receta' : 'Nueva Receta' }}</h2>
-                    <div class="grid grid-cols-3 gap-3 mb-3">
-                        <input v-model="formRec.nombre" placeholder="Nombre receta"
-                            class="border p-2 rounded col-span-2">
-                        <input v-model.number="formRec.porciones_base" type="number" placeholder="Porciones Base"
-                            class="border p-2 rounded">
-                    </div>
-
-                    <div class="bg-slate-50 p-3 rounded mb-3 border space-y-2">
-                        <div v-for="(item, idx) in formRec.ingredientes" :key="idx" class="flex gap-2">
-                            <select v-model="item.ingrediente_id" class="border p-2 rounded flex-1">
-                                <option v-for="ing in ingredientes" :key="ing.id" :value="ing.id">{{ ing.nombre }} ({{
-                                    ing.unidad_medida }})</option>
-                            </select>
-                            <input v-model.number="item.cantidad_base" type="number" step="0.01" placeholder="Cantidad"
-                                class="border p-2 rounded w-32">
-                            <button @click="formRec.ingredientes.splice(idx,1)"
-                                class="text-red-500 font-bold px-2">✕</button>
-                        </div>
-                        <button @click="formRec.ingredientes.push({ingrediente_id: '', cantidad_base: 0})"
-                            class="text-xs text-emerald-700 font-bold">+ Añadir Ingrediente</button>
-                    </div>
-
-                    <div class="flex gap-2">
-                        <button @click="guardarReceta"
-                            class="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700">Guardar
-                            Receta</button>
-                        <button v-if="modoEditRec" @click="cancelarEditRec"
-                            class="bg-slate-300 px-3 py-2 rounded">Cancelar</button>
+                    <div class="flex gap-3 items-center">
+                        <label class="text-sm font-semibold">Día:</label>
+                        <select id="selectFechaCenso" onchange="cargarCensoDia()"
+                            class="border border-slate-300 rounded-lg p-2 text-sm bg-slate-50"></select>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div v-for="r in recetasFiltradas" :key="r.id" class="bg-white p-4 rounded-lg border shadow-sm">
-                        <div class="flex justify-between items-start">
-                            <h3 class="font-bold text-lg text-emerald-950">{{ r.nombre }}</h3>
-                            <div class="space-x-2">
-                                <button @click="prepararEditRec(r)"
-                                    class="text-blue-600 text-xs font-semibold">✏️</button>
-                                <button @click="borrarReceta(r.id)"
-                                    class="text-red-600 text-xs font-semibold">🗑️</button>
-                            </div>
-                        </div>
-                        <p class="text-xs text-slate-400 mb-2">Porciones base: {{ r.porciones_base }}</p>
-                        <ul class="text-xs space-y-1 bg-slate-50 p-2 rounded border">
-                            <li v-for="ing in r.ingredientes">• {{ ing.ingrediente }}: {{ ing.cantidad_base }} {{
-                                ing.unidad }}</li>
-                        </ul>
-                    </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse border border-slate-200">
+                        <thead>
+                            <tr class="bg-slate-800 text-white text-sm">
+                                <th class="p-3">Rama</th>
+                                <th class="p-3 text-center">Participantes</th>
+                                <th class="p-3 text-center">Responsables</th>
+                                <th class="p-3 text-center">¿De Salida?</th>
+                                <th class="p-3">Tomas Ausentes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyCenso" class="divide-y divide-slate-200 text-sm"></tbody>
+                    </table>
                 </div>
-            </section>
 
-            <!-- CAMPAMENTOS -->
-            <section v-if="vistaActual === 'campamentos'">
-                <div v-if="!campSeleccionado">
-                    <div class="flex justify-between items-center mb-6">
-                        <h1 class="text-2xl font-bold">Campamentos</h1>
-                        <!-- CONTROLES DE BÚSQUEDA Y ORDENACIÓN -->
-                        <div class="flex gap-3">
-                            <input v-model="busquedaCampamento" placeholder="🔍 Buscar campamento..."
-                                class="border p-2 rounded w-64 shadow-sm bg-white">
-                            <select v-model="ordenCampamento" class="border p-2 rounded bg-white shadow-sm font-medium">
-                                <option value="fecha_desc">📅 Más recientes primero</option>
-                                <option value="fecha_asc">📅 Más antiguos primero</option>
-                                <option value="nombre_asc">🔤 Nombre (A-Z)</option>
-                                <option value="nombre_desc">🔤 Nombre (Z-A)</option>
-                            </select>
-                        </div>
+                <div class="mt-6 flex flex-wrap gap-4 justify-end">
+                    <button onclick="guardarCensoDia()"
+                        class="bg-emerald-700 hover:bg-emerald-800 text-white font-medium px-5 py-2.5 rounded-lg shadow">💾
+                        Guardar Censo de Este Día</button>
+                    <button onclick="copiarCensoTodosLosDias()"
+                        class="bg-slate-700 hover:bg-slate-800 text-white font-medium px-5 py-2.5 rounded-lg shadow">👯
+                        Copiar Censo a Todos los Días</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PESTAÑA 2: CUADRANTE Y MENÚS -->
+        <section id="tab-cuadrante" class="tab-content hidden bg-white p-6 rounded-xl shadow-sm">
+            <div id="cuadranteNoCamp"
+                class="text-center py-12 bg-slate-50 border border-dashed border-slate-300 rounded-xl">
+                <p class="text-4xl mb-2">🗓️</p>
+                <h3 class="text-lg font-bold text-slate-700">Ningún campamento seleccionado</h3>
+                <p class="text-sm text-slate-500 mb-4">Selecciona un campamento para acceder a la planificación de
+                    menús.</p>
+                <button onclick="switchTab('tab-campamentos')"
+                    class="bg-emerald-700 text-white text-sm px-4 py-2 rounded-lg font-medium">Ir a Buscar
+                    Campamentos</button>
+            </div>
+
+            <div id="cuadranteContenido" class="hidden">
+                <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-700">Planificación de Menús</h2>
+                        <p class="text-sm text-slate-500">Haz clic en cualquier plato para abrir su ficha técnica de
+                            receta.</p>
                     </div>
-
-                    <div class="bg-white p-5 rounded-xl border mb-6 flex gap-3 shadow-sm">
-                        <input v-model="nuevoCamp.nombre" placeholder="Nombre Campamento"
-                            class="border p-2 rounded flex-1">
-                        <input v-model="nuevoCamp.fecha_inicio" type="date" class="border p-2 rounded">
-                        <input v-model="nuevoCamp.fecha_fin" type="date" class="border p-2 rounded">
-                        <button @click="crearCampamento"
-                            class="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700 font-semibold">Crear</button>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div v-for="c in campamentosFiltrados" :key="c.id"
-                            class="bg-white p-5 rounded-lg border shadow-sm flex justify-between items-center">
-                            <div>
-                                <h3 class="font-bold text-lg">{{ c.nombre }}</h3>
-                                <p class="text-xs text-slate-500">📅 {{ c.fecha_inicio }} al {{ c.fecha_fin }}</p>
-                            </div>
-                            <button @click="abrirCampamento(c)"
-                                class="bg-emerald-800 text-white px-3 py-1.5 rounded text-sm hover:bg-emerald-900">Entrar
-                                ➔</button>
-                        </div>
-                        <div v-if="campamentosFiltrados.length === 0"
-                            class="col-span-2 text-center text-slate-400 py-6">
-                            No se encontraron campamentos que coincidan con la búsqueda.
-                        </div>
+                    <div class="flex gap-3">
+                        <button onclick="descargarPDF('cuadrante')"
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow">📄
+                            Exportar PDF Cuadrante</button>
+                        <button onclick="descargarPDF('lista-compra')"
+                            class="bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow">🛒
+                            Exportar PDF Lista Compra</button>
                     </div>
                 </div>
 
-                <div v-else>
-                    <div class="flex justify-between items-center mb-6">
-                        <div class="flex items-center gap-3">
-                            <button @click="campSeleccionado = null"
-                                class="bg-slate-200 px-3 py-1 rounded text-sm hover:bg-slate-300">⬅ Volver</button>
-                            <h1 class="text-2xl font-bold">{{ campSeleccionado.nombre }}</h1>
-                        </div>
-                        <div class="flex gap-3">
-                            <a :href="`/api/campamentos/${campSeleccionado.id}/pdf/lista-compra`" target="_blank"
-                                class="bg-emerald-700 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-emerald-800">
-                                📄 PDF Lista Compra
-                            </a>
-                            <a :href="`/api/campamentos/${campSeleccionado.id}/pdf/cuadrante`" target="_blank"
-                                class="bg-slate-800 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-slate-900">
-                                📋 PDF Cuadrante Cocina
-                            </a>
-                        </div>
+                <div
+                    class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6 grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Día</label>
+                        <select id="menuFecha"
+                            class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white"></select>
                     </div>
-
-                    <!-- CUADRANTE GENERAL -->
-                    <div class="bg-white p-5 rounded-xl border shadow-sm mb-6">
-                        <h2 class="font-bold text-lg mb-3">📋 Cuadrante General de Menús</h2>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-xs border-collapse border border-slate-200">
-                                <thead class="bg-slate-100">
-                                    <tr>
-                                        <th class="border p-2">Fecha</th>
-                                        <th class="border p-2">Desayuno</th>
-                                        <th class="border p-2">Almuerzo</th>
-                                        <th class="border p-2">Comida</th>
-                                        <th class="border p-2">Merienda</th>
-                                        <th class="border p-2">Cena</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="row in cuadrante" :key="row.fecha" class="hover:bg-slate-50">
-                                        <td class="border p-2 font-bold bg-slate-50">{{ row.fecha }}</td>
-                                        <td class="border p-2">{{ row.tomas.Desayuno }}</td>
-                                        <td class="border p-2">{{ row.tomas.Almuerzo }}</td>
-                                        <td class="border p-2 font-semibold text-emerald-900">{{ row.tomas.Comida }}
-                                        </td>
-                                        <td class="border p-2">{{ row.tomas.Merienda }}</td>
-                                        <td class="border p-2 font-semibold text-emerald-900">{{ row.tomas.Cena }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- DÍA SELECCIONADO -->
-                    <div class="bg-white p-4 rounded-xl border mb-6 flex items-center gap-4">
-                        <label class="font-bold text-slate-700">Día de trabajo:</label>
-                        <select v-model="fechaSeleccionada" @change="cargarDatosDia"
-                            class="border p-2 rounded font-medium bg-slate-50">
-                            <option v-for="f in fechasDisponibles" :key="f" :value="f">Día: {{ f }}</option>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Toma</label>
+                        <select id="menuToma" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
+                            <option value="Desayuno">Desayuno</option>
+                            <option value="Almuerzo">Almuerzo</option>
+                            <option value="Comida">Comida</option>
+                            <option value="Merienda">Merienda</option>
+                            <option value="Cena">Cena</option>
                         </select>
                     </div>
-
-                    <div class="grid grid-cols-2 gap-6 mb-6">
-                        <!-- CENSO POR RAMAS -->
-                        <div class="bg-white p-5 rounded-xl border shadow-sm">
-                            <h2 class="font-bold text-lg mb-3">👥 Censo del Día ({{ fechaSeleccionada }})</h2>
-                            <table class="w-full text-sm">
-                                <thead class="bg-slate-50 border-b">
-                                    <tr>
-                                        <th class="p-2 text-left">Rama</th>
-                                        <th class="p-2 text-center">Niños</th>
-                                        <th class="p-2 text-center">Responsables</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="r in censoDia" :key="r.rama_id" class="border-b">
-                                        <td class="p-2 font-semibold">{{ r.nombre_rama }}</td>
-                                        <td class="p-2 text-center">
-                                            <input type="number" v-model.number="r.num_participantes" min="0"
-                                                class="border w-20 p-1 rounded text-center">
-                                        </td>
-                                        <td class="p-2 text-center">
-                                            <input type="number" v-model.number="r.num_responsables" min="0"
-                                                class="border w-20 p-1 rounded text-center">
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-
-                            <div class="flex gap-2 mt-4">
-                                <button @click="guardarCenso"
-                                    class="bg-emerald-600 text-white px-3 py-2 rounded text-sm w-1/2 font-semibold hover:bg-emerald-700">
-                                    💾 Guardar Día Solo
-                                </button>
-                                <button @click="copiarCensoATodos"
-                                    class="bg-blue-600 text-white px-3 py-2 rounded text-sm w-1/2 font-semibold hover:bg-blue-700">
-                                    📋 Aplicar Censo a TODOS los Días
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- PROGRAMAR COMIDA -->
-                        <div class="bg-white p-5 rounded-xl border shadow-sm">
-                            <h2 class="font-bold text-lg mb-3">➕ Programar Comida</h2>
-                            <div class="space-y-3 bg-slate-50 p-4 rounded border">
-                                <div>
-                                    <label class="text-xs font-bold text-slate-500">TOMA</label>
-                                    <select v-model="formComida.toma" class="border p-2 rounded w-full bg-white">
-                                        <option value="Desayuno">Desayuno</option>
-                                        <option value="Almuerzo">Almuerzo</option>
-                                        <option value="Comida">Comida</option>
-                                        <option value="Merienda">Merienda</option>
-                                        <option value="Cena">Cena</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="text-xs font-bold text-slate-500">DESTINO</label>
-                                    <select v-model="formComida.rama_id" class="border p-2 rounded w-full bg-white">
-                                        <option :value="null">🌐 Todo el Campamento (Comedor)</option>
-                                        <option v-for="rm in ramas" :key="rm.id" :value="rm.id">🎒 Solo {{ rm.nombre }}
-                                            (Picnic / Excursión)</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="text-xs font-bold text-slate-500">RECETA</label>
-                                    <select v-model="formComida.receta_id" class="border p-2 rounded w-full bg-white">
-                                        <option v-for="rec in recetas" :key="rec.id" :value="rec.id">{{ rec.nombre }}
-                                        </option>
-                                    </select>
-                                </div>
-                                <button @click="agendarComida"
-                                    class="bg-emerald-800 text-white px-4 py-2 rounded text-sm w-full font-semibold hover:bg-emerald-900">
-                                    Añadir al Cuadrante
-                                </button>
-                            </div>
-                        </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Destino</label>
+                        <select id="menuRama" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
+                            <option value="">Todo el Campamento</option>
+                        </select>
                     </div>
-
-                    <!-- LISTA DE COMIDAS PROGRAMADAS -->
-                    <div class="bg-white p-5 rounded-xl border shadow-sm">
-                        <h2 class="font-bold text-lg mb-3">🗑️ Comidas Programadas el {{ fechaSeleccionada }}</h2>
-                        <div v-if="comidasProgramadasDia.length === 0" class="text-slate-400 text-sm py-2">
-                            No hay comidas programadas para este día.
-                        </div>
-                        <ul v-else class="divide-y border rounded-lg bg-slate-50">
-                            <li v-for="c in comidasProgramadasDia" :key="c.id"
-                                class="p-3 flex justify-between items-center">
-                                <div>
-                                    <span
-                                        class="bg-slate-200 text-slate-800 text-xs px-2 py-1 rounded font-bold uppercase mr-2">{{
-                                        c.toma }}</span>
-                                    <span class="font-bold text-emerald-950">{{ c.plato }}</span>
-                                    <span class="text-xs text-slate-500 ml-2">({{ c.destino }})</span>
-                                </div>
-                                <button @click="borrarComida(c.id)"
-                                    class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs font-bold hover:bg-red-200">
-                                    🗑️ Eliminar
-                                </button>
-                            </li>
-                        </ul>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Buscar Receta</label>
+                        <!-- BUSCADOR CON TECLADO PARA RECETAS -->
+                        <input type="text" id="menuRecetaInput" list="menuRecetaList" placeholder="🔍 Buscar receta..."
+                            class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-emerald-500">
+                        <datalist id="menuRecetaList"></datalist>
                     </div>
-
+                    <button onclick="agendarComida()"
+                        class="bg-emerald-700 hover:bg-emerald-800 text-white font-medium p-2 rounded-lg text-sm shadow">+
+                        Añadir Plato</button>
                 </div>
-            </section>
 
-        </main>
+                <h3 class="font-bold text-slate-700 mb-3">Vista Previa del Cuadrante</h3>
+                <div id="contenedorCuadrante" class="overflow-x-auto border border-slate-200 rounded-xl"></div>
+            </div>
+        </section>
+
+        <!-- PESTAÑA 3: INGREDIENTES -->
+        <section id="tab-ingredientes" class="tab-content hidden bg-white p-6 rounded-xl shadow-sm">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="md:col-span-1">
+                    <h3 id="tituloFormIngrediente" class="text-lg font-bold text-slate-700 mb-4">Añadir Ingrediente</h3>
+                    <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre</label>
+                            <input type="text" id="ingNombre" placeholder="ej. Lentejas"
+                                class="w-full border p-2 text-sm rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Unidad de Medida</label>
+                            <input type="text" id="ingUnidad" placeholder="kg, lit, ud, paquete..."
+                                class="w-full border p-2 text-sm rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Coste por Unidad (€)</label>
+                            <input type="number" step="0.01" id="ingCoste" placeholder="0.00"
+                                class="w-full border p-2 text-sm rounded-lg">
+                        </div>
+                        <div class="flex gap-2 pt-2">
+                            <button onclick="guardarIngrediente()" id="btnGuardarIngrediente"
+                                class="w-full bg-slate-800 hover:bg-slate-900 text-white text-sm py-2 rounded-lg font-semibold">+
+                                Crear Ingrediente</button>
+                            <button onclick="cancelarEdicionIngrediente()" id="btnCancelarIngrediente"
+                                class="hidden bg-slate-300 text-slate-700 text-sm px-3 py-2 rounded-lg font-semibold">X</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md:col-span-2">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-slate-700">Base de Datos de Ingredientes</h3>
+                        <span id="cantIngredientes"
+                            class="text-xs bg-slate-100 border px-2.5 py-1 rounded-full font-semibold text-slate-600">0
+                            ítems</span>
+                    </div>
+
+                    <input type="text" id="searchIngrediente" oninput="renderIngredientes()"
+                        placeholder="🔍 Buscar ingrediente..."
+                        class="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-slate-50 mb-4 focus:ring-2 focus:ring-emerald-500">
+
+                    <div class="border border-slate-200 rounded-xl overflow-hidden max-h-96 overflow-y-auto">
+                        <ul id="listaIngredientes" class="divide-y divide-slate-200 text-sm"></ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PESTAÑA 4: RECETAS -->
+        <section id="tab-recetas" class="tab-content hidden bg-white p-6 rounded-xl shadow-sm">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="md:col-span-1">
+                    <h3 id="tituloFormReceta" class="text-lg font-bold text-slate-700 mb-4">Crear Receta</h3>
+                    <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre de la Receta</label>
+                            <input type="text" id="recNombre" placeholder="ej. Macarrones con Tomate"
+                                class="w-full border p-2 text-sm rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Raciones Base</label>
+                            <input type="number" id="recPorciones" value="10" placeholder="Raciones base"
+                                class="w-full border p-2 text-sm rounded-lg">
+                        </div>
+
+                        <div class="border-t border-slate-200 pt-3 space-y-2">
+                            <p class="text-xs font-semibold text-slate-500">Ingredientes de la Receta:</p>
+                            <div class="flex gap-2">
+                                <select id="recSelectIng" class="w-2/3 border p-2 text-xs rounded-lg"></select>
+                                <input type="number" step="0.01" id="recCantIng" placeholder="Cant."
+                                    class="w-1/3 border p-2 text-xs rounded-lg">
+                                <button onclick="agregarIngredienteARecetaTemp()"
+                                    class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg text-xs font-bold">+</button>
+                            </div>
+                            <ul id="listaTempIngReceta"
+                                class="text-xs space-y-1 bg-white p-2 border rounded-lg max-h-36 overflow-y-auto"></ul>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Pasos / Instrucciones de
+                                Preparación</label>
+                            <textarea id="recInstrucciones" rows="4" placeholder="Escribe los pasos..."
+                                class="w-full border p-2 text-sm rounded-lg resize-y"></textarea>
+                        </div>
+
+                        <div class="flex gap-2 pt-2">
+                            <button onclick="guardarReceta()" id="btnGuardarReceta"
+                                class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-sm py-2 rounded-lg font-semibold">Guardar
+                                Receta</button>
+                            <button onclick="cancelarEdicionReceta()" id="btnCancelarReceta"
+                                class="hidden bg-slate-300 text-slate-700 text-sm px-3 py-2 rounded-lg font-semibold">X</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md:col-span-2">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-slate-700">Recetario</h3>
+                        <span id="cantRecetas"
+                            class="text-xs bg-slate-100 border px-2.5 py-1 rounded-full font-semibold text-slate-600">0
+                            recetas</span>
+                    </div>
+
+                    <input type="text" id="searchReceta" oninput="renderRecetas()" placeholder="🔍 Buscar receta..."
+                        class="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-slate-50 mb-4 focus:ring-2 focus:ring-emerald-500">
+
+                    <div id="gridRecetas" class="grid grid-cols-1 gap-4 max-h-[500px] overflow-y-auto pr-1"></div>
+                </div>
+            </div>
+        </section>
+
     </div>
 
+    <!-- MODAL CAMPAMENTO -->
+    <div id="modalCampamento" class="fixed inset-0 bg-black/50 hidden flex justify-center items-center p-4 z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md space-y-4">
+            <h3 id="tituloModalCampamento" class="text-lg font-bold text-slate-800">Nuevo Campamento</h3>
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre</label>
+                <input type="text" id="campNombre" placeholder="Nombre del campamento"
+                    class="w-full border p-2 text-sm rounded-lg">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="text-xs font-semibold text-slate-600">Fecha Inicio</label>
+                    <input type="date" id="campInicio" class="w-full border p-2 text-sm rounded-lg">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-600">Fecha Fin</label>
+                    <input type="date" id="campFin" class="w-full border p-2 text-sm rounded-lg">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="cerrarModalCampamento()" class="px-4 py-2 border text-sm rounded-lg">Cancelar</button>
+                <button onclick="guardarCampamentoModal()"
+                    class="px-4 py-2 bg-emerald-700 text-white text-sm rounded-lg font-semibold">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETALLE RECETA -->
+    <div id="modalRecetaDetalle" class="fixed inset-0 bg-black/50 hidden flex justify-center items-center p-4 z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-lg space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start border-b border-slate-200 pb-3">
+                <div>
+                    <h3 id="detRecetaNombre" class="text-xl font-bold text-emerald-800"></h3>
+                    <p id="detRecetaPorciones" class="text-xs font-semibold text-slate-500 mt-0.5"></p>
+                </div>
+                <button onclick="cerrarModalDetalleReceta()"
+                    class="text-slate-400 hover:text-slate-600 font-bold text-xl leading-none">&times;</button>
+            </div>
+
+            <div>
+                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">🥦 Ingredientes (Raciones
+                    Base)</h4>
+                <ul id="detRecetaIngredientes"
+                    class="text-sm space-y-1.5 bg-slate-50 p-3 rounded-lg border border-slate-200"></ul>
+            </div>
+
+            <div>
+                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">📝 Pasos y Preparación</h4>
+                <div id="detRecetaInstrucciones"
+                    class="text-sm text-slate-700 bg-slate-50 p-3 rounded-lg border border-slate-200 whitespace-pre-line leading-relaxed">
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-2 border-t border-slate-100">
+                <button onclick="cerrarModalDetalleReceta()"
+                    class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-sm rounded-lg font-semibold">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PREVISUALIZACIÓN DE COMIDAS DE UN DÍA -->
+    <div id="modal-comidas" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 id="modal-fecha-titulo" class="text-lg font-bold text-slate-800">Comidas del día</h3>
+                <button onclick="cerrarModal()"
+                    class="text-slate-400 hover:text-slate-600 font-bold text-xl">&times;</button>
+            </div>
+
+            <div id="lista-comidas-dia" class="max-h-80 overflow-y-auto mb-4 pr-1"></div>
+
+            <div class="flex justify-end pt-3 border-t border-slate-100">
+                <button onclick="cerrarModal()"
+                    class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg text-sm font-semibold">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        const { createApp } = Vue
+        const TOMAS = ["Desayuno", "Almuerzo", "Comida", "Merienda", "Cena"];
 
-        createApp({
-            data() {
-                return {
-                    vistaActual: 'campamentos',
-                    campamentos: [], ingredientes: [], recetas: [], ramas: [],
-                    busquedaIngrediente: '', busquedaReceta: '',
-                    busquedaCampamento: '',
-                    ordenCampamento: 'fecha_desc', // Por defecto fecha más reciente a más antigua
-                    formIng: { id: null, nombre: '', unidad_medida: 'kg', coste_unidad: 0.0 },
-                    modoEditIng: false,
-                    formRec: { id: null, nombre: '', porciones_base: 10, es_item_picnic: false, ingredientes: [] },
-                    modoEditRec: false,
-                    nuevoCamp: { nombre: '', fecha_inicio: '', fecha_fin: '' },
-                    campSeleccionado: null,
-                    fechasDisponibles: [],
-                    fechaSeleccionada: '',
-                    cuadrante: [],
-                    censoDia: [],
-                    comidasProgramadasDia: [],
-                    formComida: { toma: 'Comida', receta_id: '', rama_id: null }
+        let campamentos = [];
+        let ingredientes = [];
+        let recetas = [];
+        let ramas = [];
+
+        let campamentoActualId = null;
+        let fechaSeleccionada = null;
+        let tempIngredientesReceta = [];
+
+        let editandoIngredienteId = null;
+        let editandoRecetaId = null;
+        let editandoCampamentoId = null;
+
+        window.addEventListener('DOMContentLoaded', init);
+
+        async function init() {
+            await cargarRamas();
+            await cargarIngredientes();
+            await cargarRecetas();
+            await cargarCampamentos();
+        }
+
+        /* --- COMIDAS DEL DÍA Y DETALLE DE RECETA --- */
+        function abrirModal(fecha) {
+            if (!campamentoActualId) {
+                alert("Por favor, selecciona un campamento primero.");
+                return;
+            }
+            document.getElementById("modal-comidas").classList.remove("hidden");
+            verComidasDelDia(fecha);
+        }
+
+        function cerrarModal() {
+            document.getElementById("modal-comidas").classList.add("hidden");
+        }
+
+        async function verComidasDelDia(fecha) {
+            fechaSeleccionada = fecha;
+            document.getElementById("modal-fecha-titulo").innerText = `Comidas del día ${fecha}`;
+
+            const contenedor = document.getElementById("lista-comidas-dia");
+            contenedor.innerHTML = "<p class='text-slate-500 italic text-center py-4'>Cargando comidas...</p>";
+
+            try {
+                const response = await fetch(`/api/campamentos/${campamentoActualId}/comidas_dia/${fecha}`);
+                if (!response.ok) throw new Error("Error en la petición API");
+                const comidas = await response.json();
+
+                contenedor.innerHTML = "";
+
+                if (!comidas || comidas.length === 0) {
+                    contenedor.innerHTML = "<p class='text-slate-500 italic text-center py-4'>No hay comidas agendadas para este día.</p>";
+                    return;
                 }
-            },
-            computed: {
-                ingredientesFiltrados() {
-                    return this.ingredientes.filter(i => i.nombre.toLowerCase().includes(this.busquedaIngrediente.toLowerCase()))
-                },
-                recetasFiltradas() {
-                    return this.recetas.filter(r => r.nombre.toLowerCase().includes(this.busquedaReceta.toLowerCase()))
-                },
-                campamentosFiltrados() {
-                    let res = this.campamentos.filter(c =>
-                        c.nombre.toLowerCase().includes(this.busquedaCampamento.toLowerCase())
-                    );
-                    return res.sort((a, b) => {
-                        if (this.ordenCampamento === 'fecha_desc') {
-                            return (b.fecha_inicio || '').localeCompare(a.fecha_inicio || '');
-                        } else if (this.ordenCampamento === 'fecha_asc') {
-                            return (a.fecha_inicio || '').localeCompare(b.fecha_inicio || '');
-                        } else if (this.ordenCampamento === 'nombre_asc') {
-                            return a.nombre.localeCompare(b.nombre);
-                        } else if (this.ordenCampamento === 'nombre_desc') {
-                            return b.nombre.localeCompare(a.nombre);
-                        }
-                        return 0;
+
+                comidas.forEach(item => {
+                    const div = document.createElement("div");
+                    div.className = "flex items-center justify-between p-3 my-2 bg-slate-50 rounded-lg border border-slate-200 shadow-sm hover:bg-slate-100 transition";
+
+                    const platoTexto = item.plato || "";
+                    const actionClick = `abrirFichaAlimentoPorNombre('${platoTexto.replace(/'/g, "\\'")}')`;
+
+                    div.innerHTML = `
+                        <div class="cursor-pointer flex-1 mr-2" onclick="${actionClick}">
+                            <span class="font-bold text-emerald-700">[${item.toma}]</span> 
+                            <span class="font-semibold text-slate-800 hover:text-emerald-700 underline underline-offset-2">📖 ${platoTexto}</span>
+                            <span class="text-xs text-slate-500 block mt-0.5">Destino: ${item.destino} • <span class="text-emerald-600 font-medium">Ver Ficha Receta 🔍</span></span>
+                        </div>
+                        <button onclick="eliminarComida(${item.id})" 
+                                class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold rounded-lg transition shadow-sm">
+                            🗑️ Eliminar
+                        </button>
+                    `;
+                    contenedor.appendChild(div);
+                });
+            } catch (error) {
+                console.error("Error al cargar comidas:", error);
+                contenedor.innerHTML = "<p class='text-slate-500 text-center py-4 text-xs'>No se pudieron obtener comidas desde la API.</p>";
+            }
+        }
+
+        function abrirDetalleRecetaDirecto(recetaId) {
+            if (!recetaId) {
+                alert("No hay información de la receta disponible.");
+                return;
+            }
+            abrirModalDetalleReceta(recetaId);
+        }
+
+        // Abre la receta buscando por nombre limpìando corchetes y coincidencias parciales
+        function abrirFichaAlimentoPorNombre(nombre) {
+            if (!nombre || nombre === '-') return;
+
+            // Eliminar etiquetas entre corchetes como [Castores] o [Picnic]
+            let nombreLimpio = nombre.replace(/\[.*?\]/g, '').trim();
+
+            // 1. Intentar coincidencia exacta
+            let rec = recetas.find(r => r.nombre.toLowerCase().trim() === nombreLimpio.toLowerCase());
+
+            // 2. Si vienen varios platos separados por comas, barras o barras verticales
+            if (!rec && (nombreLimpio.includes(',') || nombreLimpio.includes('|') || nombreLimpio.includes('/'))) {
+                const subNombres = nombreLimpio.split(/[,|/]/).map(s => s.trim()).filter(Boolean);
+                for (const sub of subNombres) {
+                    rec = recetas.find(r => r.nombre.toLowerCase().trim() === sub.toLowerCase());
+                    if (rec) break;
+                }
+            }
+
+            // 3. Coincidencia parcial si aún no se encuentra
+            if (!rec) {
+                rec = recetas.find(r =>
+                    nombreLimpio.toLowerCase().includes(r.nombre.toLowerCase().trim()) ||
+                    r.nombre.toLowerCase().trim().includes(nombreLimpio.toLowerCase())
+                );
+            }
+
+            if (rec) {
+                abrirModalDetalleReceta(rec.id);
+            } else {
+                alert(`No se encontró la ficha técnica para la receta: "${nombreLimpio}"`);
+            }
+        }
+
+        async function eliminarComida(comidaId) {
+            if (!confirm("¿Estás seguro de que deseas eliminar esta comida del cuadrante?")) return;
+
+            try {
+                const response = await fetch(`/api/campamentos/${campamentoActualId}/comidas/${comidaId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    await verComidasDelDia(fechaSeleccionada);
+                    cargarCuadrante();
+                } else {
+                    alert("Error al intentar eliminar la comida.");
+                }
+            } catch (error) {
+                console.error("Error al eliminar la comida:", error);
+            }
+        }
+
+        /* --- PESTAÑAS --- */
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(tabId).classList.remove('hidden');
+            const btn = document.getElementById('btn-' + tabId);
+            if (btn) btn.classList.add('active');
+
+            if (tabId === 'tab-cuadrante' && campamentoActualId) cargarCuadrante();
+        }
+
+        /* --- CAMPAMENTOS --- */
+        async function cargarCampamentos() {
+            try {
+                const res = await fetch('/api/campamentos');
+                if (res.ok) campamentos = await res.json();
+            } catch (e) {
+                console.error("Error cargando campamentos", e);
+            }
+            actualizarSelectCampamentosHeader();
+            renderCampamentos();
+        }
+
+        function actualizarSelectCampamentosHeader() {
+            const sel = document.getElementById('selectCampamento');
+            sel.innerHTML = '<option value="">-- Selecciona un Campamento --</option>';
+            campamentos.forEach(c => {
+                sel.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
+            });
+            if (campamentoActualId) sel.value = campamentoActualId;
+        }
+
+        function renderCampamentos() {
+            const query = (document.getElementById('searchCampamento').value || '').toLowerCase();
+            const grid = document.getElementById('gridCampamentos');
+            grid.innerHTML = '';
+
+            const filtrados = campamentos.filter(c => c.nombre.toLowerCase().includes(query));
+
+            if (filtrados.length === 0) {
+                grid.innerHTML = `<p class="col-span-full text-slate-400 text-sm text-center py-8">No se encontraron campamentos.</p>`;
+                return;
+            }
+
+            filtrados.forEach(c => {
+                const esSeleccionado = c.id == campamentoActualId;
+                grid.innerHTML += `
+                    <div class="border ${esSeleccionado ? 'border-emerald-500 bg-emerald-50/30' : 'border-slate-200 bg-white'} p-4 rounded-xl shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-bold text-slate-800 text-base">${c.nombre}</h3>
+                                ${esSeleccionado ? '<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Activo</span>' : ''}
+                            </div>
+                            <p class="text-xs text-slate-500 mb-4">📅 ${c.fecha_inicio} al ${c.fecha_fin}</p>
+                        </div>
+                        <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+                            <button onclick="seleccionarCampamento(${c.id})" class="flex-1 bg-emerald-700 hover:bg-emerald-800 text-white text-xs py-2 rounded-lg font-semibold">
+                                ${esSeleccionado ? '✓ En Uso' : '🎯 Seleccionar'}
+                            </button>
+                            <button onclick="editarCampamento(${c.id})" class="bg-slate-100 hover:bg-slate-200 text-slate-700 p-2 rounded-lg text-xs font-medium">✏️</button>
+                            <button onclick="eliminarCampamento(${c.id})" class="bg-red-50 hover:bg-red-100 text-red-600 p-2 rounded-lg text-xs font-medium">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function seleccionarCampamento(id) {
+            campamentoActualId = id;
+            document.getElementById('selectCampamento').value = id;
+
+            document.getElementById('censoNoCamp').classList.add('hidden');
+            document.getElementById('censoContenido').classList.remove('hidden');
+            document.getElementById('cuadranteNoCamp').classList.add('hidden');
+            document.getElementById('cuadranteContenido').classList.remove('hidden');
+
+            renderCampamentos();
+            cambiarCampamento();
+            switchTab('tab-censo');
+        }
+
+        function cambiarCampamentoDesdeSelect() {
+            const val = document.getElementById('selectCampamento').value;
+            if (val) {
+                seleccionarCampamento(val);
+            } else {
+                campamentoActualId = null;
+                document.getElementById('censoNoCamp').classList.remove('hidden');
+                document.getElementById('censoContenido').classList.add('hidden');
+                document.getElementById('cuadranteNoCamp').classList.remove('hidden');
+                document.getElementById('cuadranteContenido').classList.add('hidden');
+                renderCampamentos();
+            }
+        }
+
+        async function cambiarCampamento() {
+            if (!campamentoActualId) return;
+            const res = await fetch(`/api/campamentos/${campamentoActualId}/dias`);
+            if (!res.ok) return;
+            const fechas = await res.json();
+
+            const selCenso = document.getElementById('selectFechaCenso');
+            if (selCenso) {
+                selCenso.innerHTML = fechas.map(f => `<option value="${f}">${f}</option>`).join('');
+                cargarCensoDia();
+            }
+
+            const selMenuFecha = document.getElementById('menuFecha');
+            if (selMenuFecha) {
+                selMenuFecha.innerHTML = fechas.map(f => `<option value="${f}">${f}</option>`).join('');
+            }
+
+            cargarCuadrante();
+        }
+
+        function abrirModalCampamento() {
+            editandoCampamentoId = null;
+            document.getElementById('tituloModalCampamento').innerText = 'Nuevo Campamento';
+            document.getElementById('campNombre').value = '';
+            document.getElementById('campInicio').value = '';
+            document.getElementById('campFin').value = '';
+            document.getElementById('modalCampamento').classList.remove('hidden');
+        }
+
+        function cerrarModalCampamento() {
+            document.getElementById('modalCampamento').classList.add('hidden');
+        }
+
+        async function guardarCampamentoModal() {
+            const nombre = document.getElementById('campNombre').value;
+            const inicio = document.getElementById('campInicio').value;
+            const fin = document.getElementById('campFin').value;
+
+            if (!nombre || !inicio || !fin) {
+                alert('Por favor, rellena todos los campos.');
+                return;
+            }
+
+            const payload = { nombre, fecha_inicio: inicio, fecha_fin: fin };
+
+            try {
+                if (editandoCampamentoId) {
+                    await fetch(`/api/campamentos/${editandoCampamentoId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    await fetch('/api/campamentos', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
                     });
                 }
-            },
-            methods: {
-                tabClass(tab) {
-                    return ['w-full text-left px-4 py-2.5 rounded-lg font-medium transition', this.vistaActual === tab ? 'bg-emerald-900 text-white' : 'text-emerald-100 hover:bg-emerald-700']
-                },
-                async cargarDatos() {
-                    const [c, i, r, rm] = await Promise.all([
-                        fetch('/api/campamentos').then(res => res.json()),
-                        fetch('/api/ingredientes').then(res => res.json()),
-                        fetch('/api/recetas').then(res => res.json()),
-                        fetch('/api/ramas').then(res => res.json())
-                    ]);
-                    this.campamentos = c; this.ingredientes = i; this.recetas = r; this.ramas = rm;
-                },
-                async guardarIngrediente() {
-                    const url = this.modoEditIng ? `/api/ingredientes/${this.formIng.id}` : '/api/ingredientes';
-                    const method = this.modoEditIng ? 'PUT' : 'POST';
-                    await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.formIng) });
-                    this.cancelarEditIng(); this.cargarDatos();
-                },
-                prepararEditIng(i) { this.formIng = { ...i }; this.modoEditIng = true; },
-                cancelarEditIng() { this.formIng = { id: null, nombre: '', unidad_medida: 'kg', coste_unidad: 0.0 }; this.modoEditIng = false; },
-                async borrarIngrediente(id) {
-                    if (confirm("¿Eliminar ingrediente?")) { await fetch(`/api/ingredientes/${id}`, { method: 'DELETE' }); this.cargarDatos(); }
-                },
-                prepararEditRec(r) {
-                    this.modoEditRec = true;
-                    const ings = r.ingredientes.map(i => {
-                        const objIng = this.ingredientes.find(x => x.nombre === i.ingrediente);
-                        return { ingrediente_id: objIng ? objIng.id : '', cantidad_base: i.cantidad_base };
-                    });
-                    this.formRec = { id: r.id, nombre: r.nombre, porciones_base: r.porciones_base, es_item_picnic: r.es_item_picnic, ingredientes: ings };
-                },
-                cancelarEditRec() { this.formRec = { id: null, nombre: '', porciones_base: 10, es_item_picnic: false, ingredientes: [] }; this.modoEditRec = false; },
-                async guardarReceta() {
-                    const url = this.modoEditRec ? `/api/recetas/${this.formRec.id}` : '/api/recetas';
-                    const method = this.modoEditRec ? 'PUT' : 'POST';
-                    await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.formRec) });
-                    this.cancelarEditRec(); this.cargarDatos();
-                },
-                async borrarReceta(id) {
-                    if (confirm("¿Eliminar receta?")) { await fetch(`/api/recetas/${id}`, { method: 'DELETE' }); this.cargarDatos(); }
-                },
-                async crearCampamento() {
-                    await fetch('/api/campamentos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.nuevoCamp) });
-                    this.nuevoCamp = { nombre: '', fecha_inicio: '', fecha_fin: '' }; this.cargarDatos();
-                },
-                async abrirCampamento(c) {
-                    this.campSeleccionado = c;
-                    this.fechasDisponibles = await fetch(`/api/campamentos/${c.id}/dias`).then(r => r.json());
-                    this.fechaSeleccionada = this.fechasDisponibles[0];
-                    this.cargarCuadrante();
-                    this.cargarDatosDia();
-                },
-                async cargarCuadrante() {
-                    this.cuadrante = await fetch(`/api/campamentos/${this.campSeleccionado.id}/cuadrante`).then(r => r.json());
-                },
-                async cargarDatosDia() {
-                    if (!this.fechaSeleccionada) return;
-                    const [resCenso, resComidas] = await Promise.all([
-                        fetch(`/api/campamentos/${this.campSeleccionado.id}/censo/${this.fechaSeleccionada}`).then(r => r.json()),
-                        fetch(`/api/campamentos/${this.campSeleccionado.id}/comidas_dia/${this.fechaSeleccionada}`).then(r => r.json())
-                    ]);
+                cerrarModalCampamento();
+                await cargarCampamentos();
+            } catch (e) {
+                console.error("Error guardando campamento:", e);
+            }
+        }
 
-                    this.censoDia = this.ramas.map(rama => {
-                        const existente = resCenso.find(x => Number(x.rama_id) === Number(rama.id));
-                        return {
-                            rama_id: Number(rama.id),
-                            nombre_rama: rama.nombre,
-                            num_participantes: existente ? Number(existente.num_participantes) : 0,
-                            num_responsables: existente ? Number(existente.num_responsables) : 0,
-                            esta_de_salida: existente ? Boolean(existente.esta_de_salida) : false
-                        };
-                    });
+        function editarCampamento(id) {
+            const c = campamentos.find(item => item.id == id);
+            if (!c) return;
+            editandoCampamentoId = id;
+            document.getElementById('tituloModalCampamento').innerText = 'Editar Campamento';
+            document.getElementById('campNombre').value = c.nombre;
+            document.getElementById('campInicio').value = c.fecha_inicio;
+            document.getElementById('campFin').value = c.fecha_fin;
+            document.getElementById('modalCampamento').classList.remove('hidden');
+        }
 
-                    this.comidasProgramadasDia = resComidas;
-                },
-                sanitizarCenso() {
-                    return this.censoDia.map(item => ({
-                        rama_id: Number(item.rama_id),
-                        num_participantes: Number(item.num_participantes) || 0,
-                        num_responsables: Number(item.num_responsables) || 0,
-                        esta_de_salida: Boolean(item.esta_de_salida)
-                    }));
-                },
-                async guardarCenso() {
-                    const censoLimpio = this.sanitizarCenso();
-                    try {
-                        const res = await fetch(`/api/campamentos/${this.campSeleccionado.id}/censo/${this.fechaSeleccionada}`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(censoLimpio)
-                        });
-                        if (res.ok) {
-                            alert("✓ Censo guardado para el día " + this.fechaSeleccionada);
-                            await this.cargarDatosDia();
-                        } else {
-                            const err = await res.json();
-                            alert("❌ Error backend: " + JSON.stringify(err.detail || err));
-                        }
-                    } catch (err) {
-                        alert("❌ Error de comunicación con el servidor.");
+        async function eliminarCampamento(id) {
+            if (!confirm('¿Seguro que deseas eliminar este campamento?')) return;
+            try {
+                await fetch(`/api/campamentos/${id}`, { method: 'DELETE' });
+                if (campamentoActualId == id) {
+                    campamentoActualId = null;
+                    document.getElementById('selectCampamento').value = '';
+                }
+                await cargarCampamentos();
+            } catch (e) {
+                console.error("Error eliminando campamento:", e);
+            }
+        }
+
+        /* --- CENSO DIARIO --- */
+        async function cargarRamas() {
+            try {
+                const res = await fetch('/api/ramas');
+                if (res.ok) ramas = await res.json();
+            } catch (e) {
+                console.error("Error al cargar ramas:", e);
+            }
+            actualizarSelectRamasMenu();
+        }
+
+        function actualizarSelectRamasMenu() {
+            const sel = document.getElementById('menuRama');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">Todo el Campamento</option>';
+            ramas.forEach(r => {
+                sel.innerHTML += `<option value="${r.id}">${r.nombre}</option>`;
+            });
+        }
+
+        function toggleTomasAusentes(checkboxSalida) {
+            const tr = checkboxSalida.closest('tr');
+            const checkboxesTomas = tr.querySelectorAll('.censo-ausencia');
+            checkboxesTomas.forEach(cb => {
+                cb.disabled = !checkboxSalida.checked;
+                if (!checkboxSalida.checked) {
+                    cb.checked = false;
+                }
+                const label = cb.closest('label');
+                if (label) {
+                    if (!checkboxSalida.checked) {
+                        label.classList.add('opacity-40', 'cursor-not-allowed');
+                        label.classList.remove('cursor-pointer');
+                    } else {
+                        label.classList.remove('opacity-40', 'cursor-not-allowed');
+                        label.classList.add('cursor-pointer');
                     }
-                },
-                async copiarCensoATodos() {
-                    if (confirm("¿Seguro que quieres aplicar este censo a TODOS los días del campamento? Se sobreescribirán los registros de las demás fechas.")) {
-                        const censoLimpio = this.sanitizarCenso();
-                        try {
-                            const res = await fetch(`/api/campamentos/${this.campSeleccionado.id}/copiar-censo-todos`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(censoLimpio)
-                            });
-                            const data = await res.json();
-                            if (res.ok) {
-                                alert(`✓ Censo aplicado con éxito a todos los días (${data.filas_afectadas} registros actualizados).`);
-                                await this.cargarDatosDia();
-                            } else {
-                                alert("❌ Error del servidor: " + JSON.stringify(data.detail || data));
+                }
+            });
+        }
+
+        async function cargarCensoDia() {
+            const fecha = document.getElementById('selectFechaCenso').value;
+            if (!fecha) return;
+            const tbody = document.getElementById('tbodyCenso');
+            tbody.innerHTML = '';
+
+            try {
+                const res = await fetch(`/api/campamentos/${campamentoActualId}/censo/${fecha}`);
+                let censoData = [];
+                if (res.ok) censoData = await res.json();
+
+                ramas.forEach(r => {
+                    const d = censoData.find(item => item.rama_id == r.id) || { num_participantes: 0, num_responsables: 0, esta_de_salida: false, tomas_ausentes: [] };
+                    const estaSalida = d.esta_de_salida;
+
+                    tbody.innerHTML += `
+                        <tr data-rama-id="${r.id}">
+                            <td class="p-3 font-semibold text-slate-700">${r.nombre}</td>
+                            <td class="p-3 text-center"><input type="number" min="0" value="${d.num_participantes}" class="w-16 border rounded text-center p-1 censo-chavales"></td>
+                            <td class="p-3 text-center"><input type="number" min="0" value="${d.num_responsables}" class="w-16 border rounded text-center p-1 censo-scouters"></td>
+                            <td class="p-3 text-center">
+                                <input type="checkbox" ${estaSalida ? 'checked' : ''} onchange="toggleTomasAusentes(this)" class="w-4 h-4 text-emerald-600 rounded censo-salida">
+                            </td>
+                            <td class="p-3">
+                                <div class="flex flex-wrap gap-2 text-xs">
+                                    ${TOMAS.map(t => `
+                                        <label class="inline-flex items-center gap-1 ${!estaSalida ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}">
+                                            <input type="checkbox" value="${t}" ${(d.tomas_ausentes || []).includes(t) ? 'checked' : ''} ${!estaSalida ? 'disabled' : ''} class="censo-ausencia"> ${t}
+                                        </label>
+                                    `).join('')}
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                console.error("Error al cargar censo:", e);
+            }
+        }
+
+        async function guardarCensoDia() {
+            if (!campamentoActualId) return;
+            const fecha = document.getElementById('selectFechaCenso').value;
+            const filas = document.querySelectorAll('#tbodyCenso tr');
+            const datos = [];
+
+            filas.forEach(tr => {
+                const ramaId = parseInt(tr.getAttribute('data-rama-id'));
+                const numPart = parseInt(tr.querySelector('.censo-chavales').value) || 0;
+                const numResp = parseInt(tr.querySelector('.censo-scouters').value) || 0;
+                const estaSalida = tr.querySelector('.censo-salida').checked;
+                const tomasAusentes = [];
+                tr.querySelectorAll('.censo-ausencia:checked').forEach(cb => {
+                    tomasAusentes.push(cb.value);
+                });
+
+                datos.push({
+                    rama_id: ramaId,
+                    num_participantes: numPart,
+                    num_responsables: numResp,
+                    esta_de_salida: estaSalida,
+                    tomas_ausentes: estaSalida ? tomasAusentes : []
+                });
+            });
+
+            try {
+                const res = await fetch(`/api/campamentos/${campamentoActualId}/censo/${fecha}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+                if (res.ok) {
+                    alert('Censo del día guardado correctamente.');
+                } else {
+                    alert('Error al guardar el censo.');
+                }
+            } catch (e) {
+                console.error('Error al guardar censo:', e);
+            }
+        }
+
+        async function copiarCensoTodosLosDias() {
+            if (!campamentoActualId) return;
+            if (!confirm('¿Copiar la configuración del censo de este día a TODOS los días del campamento?')) return;
+
+            const filas = document.querySelectorAll('#tbodyCenso tr');
+            const datos = [];
+
+            filas.forEach(tr => {
+                const ramaId = parseInt(tr.getAttribute('data-rama-id'));
+                const numPart = parseInt(tr.querySelector('.censo-chavales').value) || 0;
+                const numResp = parseInt(tr.querySelector('.censo-scouters').value) || 0;
+                const estaSalida = tr.querySelector('.censo-salida').checked;
+                const tomasAusentes = [];
+                tr.querySelectorAll('.censo-ausencia:checked').forEach(cb => {
+                    tomasAusentes.push(cb.value);
+                });
+
+                datos.push({
+                    rama_id: ramaId,
+                    num_participantes: numPart,
+                    num_responsables: numResp,
+                    esta_de_salida: estaSalida,
+                    tomas_ausentes: estaSalida ? tomasAusentes : []
+                });
+            });
+
+            try {
+                const res = await fetch(`/api/campamentos/${campamentoActualId}/copiar-censo-todos`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+                if (res.ok) {
+                    alert('Censo copiado con éxito a todos los días.');
+                } else {
+                    alert('Error al copiar el censo.');
+                }
+            } catch (e) {
+                console.error('Error al copiar censo:', e);
+            }
+        }
+
+        /* --- CUADRANTE --- */
+        async function cargarCuadrante() {
+            if (!campamentoActualId) return;
+            const contenedor = document.getElementById('contenedorCuadrante');
+            if (!contenedor) return;
+
+            try {
+                const res = await fetch(`/api/campamentos/${campamentoActualId}/cuadrante`);
+                let cuadranteData = [];
+                if (res.ok) cuadranteData = await res.json();
+
+                let html = `
+                    <table class="w-full text-left border-collapse border border-slate-200 min-w-[750px]">
+                        <thead>
+                            <tr class="bg-slate-800 text-white text-xs">
+                                <th class="p-3 border border-slate-700 w-28">Fecha</th>
+                                ${TOMAS.map(t => `<th class="p-3 border border-slate-700 text-center">${t}</th>`).join('')}
+                                <th class="p-3 border border-slate-700 text-center w-24">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 text-xs">
+                `;
+
+                cuadranteData.forEach(filaDia => {
+                    html += `<tr>
+                        <td class="p-3 font-bold bg-slate-50 border text-slate-700">${filaDia.fecha}</td>`;
+
+                    TOMAS.forEach(toma => {
+                        const infoToma = filaDia.tomas ? filaDia.tomas[toma] : null;
+                        html += `<td class="p-2 border align-top bg-white">`;
+
+                        if (infoToma) {
+                            let nombrePlato = "";
+                            let recetaId = null;
+
+                            if (typeof infoToma === 'object') {
+                                nombrePlato = infoToma.plato || infoToma.nombre || "";
+                                recetaId = infoToma.receta_id;
+                            } else if (typeof infoToma === 'string' && infoToma !== '-') {
+                                nombrePlato = infoToma;
                             }
-                        } catch (err) {
-                            alert("❌ Error al enviar datos al servidor.");
+
+                            if (nombrePlato && nombrePlato !== '-') {
+                                // Separar múltiples comidas programadas en una misma toma
+                                const platosList = nombrePlato.split(' | ');
+
+                                platosList.forEach(platoItem => {
+                                    const platoTrimmed = platoItem.trim();
+                                    if (!platoTrimmed) return;
+
+                                    const actionClick = (recetaId && platosList.length === 1)
+                                        ? `abrirDetalleRecetaDirecto(${recetaId})`
+                                        : `abrirFichaAlimentoPorNombre('${platoTrimmed.replace(/'/g, "\\'")}')`;
+
+                                    html += `
+                                        <div onclick="${actionClick}"
+                                             title="Haz clic para ver la ficha técnica de la receta"
+                                             class="mb-1 p-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded text-emerald-900 shadow-sm cursor-pointer transition flex items-center justify-between group">
+                                            <span class="font-semibold text-xs">📖 ${platoTrimmed}</span>
+                                            <span class="text-[10px] text-emerald-600 opacity-0 group-hover:opacity-100 font-bold ml-1">🔍</span>
+                                        </div>
+                                    `;
+                                });
+                            } else {
+                                html += `<div onclick="abrirModal('${filaDia.fecha}')" class="p-2 text-center text-slate-300 italic hover:bg-slate-50 cursor-pointer rounded transition">-</div>`;
+                            }
+                        } else {
+                            html += `<div onclick="abrirModal('${filaDia.fecha}')" class="p-2 text-center text-slate-300 italic hover:bg-slate-50 cursor-pointer rounded transition">-</div>`;
                         }
-                    }
-                },
-                async agendarComida() {
-                    if (!this.formComida.receta_id) return;
-                    await fetch(`/api/campamentos/${this.campSeleccionado.id}/comidas/${this.fechaSeleccionada}`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.formComida)
+                        html += `</td>`;
                     });
-                    this.formComida.receta_id = '';
-                    this.cargarCuadrante();
-                    this.cargarDatosDia();
-                },
-                async borrarComida(id) {
-                    if (confirm("¿Seguro que quieres eliminar esta comida del cuadrante?")) {
-                        await fetch(`/api/campamentos/${this.campSeleccionado.id}/comidas/${id}`, { method: 'DELETE' });
-                        this.cargarCuadrante();
-                        this.cargarDatosDia();
-                    }
+
+                    html += `
+                        <td class="p-2 border text-center align-middle bg-slate-50">
+                            <button onclick="abrirModal('${filaDia.fecha}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1.5 rounded text-[11px] font-semibold flex items-center justify-center gap-1 mx-auto shadow-sm">
+                                ⚙️ Gestionar
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+
+                html += `</tbody></table>`;
+                contenedor.innerHTML = html;
+
+            } catch (e) {
+                console.error("Error al cargar cuadrante:", e);
+                contenedor.innerHTML = `<p class="p-4 text-red-500 text-center">Error al cargar el cuadrante.</p>`;
+            }
+        }
+
+        async function agendarComida() {
+            const fecha = document.getElementById('menuFecha').value;
+            const toma = document.getElementById('menuToma').value;
+            const ramaVal = document.getElementById('menuRama').value;
+            const nombreReceta = document.getElementById('menuRecetaInput').value.trim();
+
+            if (!fecha || !nombreReceta) {
+                alert('Por favor selecciona una fecha y busca una receta.');
+                return;
+            }
+
+            // Buscar la receta por su nombre ingresado
+            const recetaObj = recetas.find(r => r.nombre.toLowerCase() === nombreReceta.toLowerCase());
+
+            if (!recetaObj) {
+                alert('La receta ingresada no existe en la base de datos. Selecciona una receta válida.');
+                return;
+            }
+
+            const payload = {
+                toma: toma,
+                receta_id: recetaObj.id,
+                rama_id: ramaVal ? parseInt(ramaVal) : null,
+                es_picnic: false
+            };
+
+            try {
+                const res = await fetch(`/api/campamentos/${campamentoActualId}/comidas/${fecha}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    document.getElementById('menuRecetaInput').value = '';
+                    await cargarCuadrante();
+                } else {
+                    alert('Error al agendar la comida.');
                 }
-            },
-            mounted() { this.cargarDatos(); }
-        }).mount('#app')
+            } catch (e) {
+                console.error('Error al agendar comida:', e);
+            }
+        }
+
+        function descargarPDF(tipo) {
+            if (!campamentoActualId) {
+                alert("Por favor, selecciona un campamento primero.");
+                return;
+            }
+            window.open(`/api/campamentos/${campamentoActualId}/pdf/${tipo}`, '_blank');
+        }
+
+        /* --- INGREDIENTES --- */
+        async function cargarIngredientes() {
+            try {
+                const res = await fetch('/api/ingredientes');
+                if (res.ok) ingredientes = await res.json();
+            } catch (e) {
+                console.error("Error al cargar ingredientes:", e);
+            }
+            renderIngredientes();
+            actualizarSelectIngredientesRecetas();
+        }
+
+        function renderIngredientes() {
+            const query = (document.getElementById('searchIngrediente').value || '').toLowerCase();
+            const lista = document.getElementById('listaIngredientes');
+            lista.innerHTML = '';
+
+            const filtrados = ingredientes.filter(i => i.nombre.toLowerCase().includes(query));
+            document.getElementById('cantIngredientes').innerText = `${filtrados.length} ítems`;
+
+            filtrados.forEach(i => {
+                lista.innerHTML += `
+                    <li class="p-3 flex justify-between items-center hover:bg-slate-50">
+                        <div>
+                            <span class="font-bold text-slate-800">${i.nombre}</span>
+                            <span class="text-xs text-slate-500 block">Unidad: ${i.unidad_medida} | Coste: ${parseFloat(i.coste_unidad || 0).toFixed(2)}€</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="editarIngrediente(${i.id})" class="text-xs text-slate-600 hover:text-slate-900 bg-slate-100 p-1.5 rounded">✏️</button>
+                            <button onclick="eliminarIngrediente(${i.id})" class="text-xs text-red-600 hover:text-red-800 bg-red-50 p-1.5 rounded">🗑️</button>
+                        </div>
+                    </li>
+                `;
+            });
+        }
+
+        async function guardarIngrediente() {
+            const nombre = document.getElementById('ingNombre').value.trim();
+            const unidad_medida = document.getElementById('ingUnidad').value.trim();
+            const coste_unidad = parseFloat(document.getElementById('ingCoste').value) || 0;
+
+            if (!nombre || !unidad_medida) {
+                alert('Nombre y unidad de medida son obligatorios.');
+                return;
+            }
+
+            const payload = { nombre, unidad_medida, coste_unidad };
+
+            try {
+                if (editandoIngredienteId) {
+                    await fetch(`/api/ingredientes/${editandoIngredienteId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    await fetch('/api/ingredientes', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                }
+                cancelarEdicionIngrediente();
+                await cargarIngredientes();
+            } catch (e) {
+                console.error("Error guardando ingrediente:", e);
+            }
+        }
+
+        function editarIngrediente(id) {
+            const ing = ingredientes.find(i => i.id == id);
+            if (!ing) return;
+            editandoIngredienteId = id;
+            document.getElementById('tituloFormIngrediente').innerText = 'Editar Ingrediente';
+            document.getElementById('ingNombre').value = ing.nombre;
+            document.getElementById('ingUnidad').value = ing.unidad_medida;
+            document.getElementById('ingCoste').value = ing.coste_unidad;
+            document.getElementById('btnGuardarIngrediente').innerText = 'Guardar Cambios';
+            document.getElementById('btnCancelarIngrediente').classList.remove('hidden');
+        }
+
+        function cancelarEdicionIngrediente() {
+            editandoIngredienteId = null;
+            document.getElementById('tituloFormIngrediente').innerText = 'Añadir Ingrediente';
+            document.getElementById('ingNombre').value = '';
+            document.getElementById('ingUnidad').value = '';
+            document.getElementById('ingCoste').value = '';
+            document.getElementById('btnGuardarIngrediente').innerText = '+ Crear Ingrediente';
+            document.getElementById('btnCancelarIngrediente').classList.add('hidden');
+        }
+
+        async function eliminarIngrediente(id) {
+            if (!confirm('¿Eliminar ingrediente?')) return;
+            try {
+                await fetch(`/api/ingredientes/${id}`, { method: 'DELETE' });
+                await cargarIngredientes();
+            } catch (e) {
+                console.error("Error eliminando ingrediente:", e);
+            }
+        }
+
+        function actualizarSelectIngredientesRecetas() {
+            const sel = document.getElementById('recSelectIng');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">Selecciona ingrediente...</option>';
+            ingredientes.forEach(i => {
+                sel.innerHTML += `<option value="${i.id}">${i.nombre} (${i.unidad_medida})</option>`;
+            });
+        }
+
+        /* --- RECETAS --- */
+        async function cargarRecetas() {
+            try {
+                const res = await fetch('/api/recetas');
+                if (res.ok) recetas = await res.json();
+            } catch (e) {
+                console.error("Error al cargar recetas:", e);
+            }
+            renderRecetas();
+            actualizarSelectRecetasCuadrante();
+        }
+
+        function actualizarSelectRecetasCuadrante() {
+            const list = document.getElementById('menuRecetaList');
+            if (!list) return;
+            list.innerHTML = '';
+            recetas.forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r.nombre;
+                list.appendChild(opt);
+            });
+        }
+
+        function renderRecetas() {
+            const query = (document.getElementById('searchReceta').value || '').toLowerCase();
+            const grid = document.getElementById('gridRecetas');
+            grid.innerHTML = '';
+
+            const filtradas = recetas.filter(r => r.nombre.toLowerCase().includes(query));
+            document.getElementById('cantRecetas').innerText = `${filtradas.length} recetas`;
+
+            filtradas.forEach(r => {
+                grid.innerHTML += `
+                    <div class="border border-slate-200 p-4 rounded-xl bg-white shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-bold text-slate-800 text-base cursor-pointer hover:text-emerald-700" onclick="abrirModalDetalleReceta(${r.id})">${r.nombre}</h4>
+                                <span class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded">${r.porciones_base} raciones</span>
+                            </div>
+                            <p class="text-xs text-slate-500 line-clamp-2">${r.instrucciones || 'Sin instrucciones'}</p>
+                        </div>
+                        <div class="flex justify-end gap-2 pt-3 mt-3 border-t border-slate-100">
+                            <button onclick="abrirModalDetalleReceta(${r.id})" class="text-xs bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded font-semibold">👁️ Ver</button>
+                            <button onclick="editarReceta(${r.id})" class="text-xs bg-slate-100 text-slate-700 px-3 py-1.5 rounded font-semibold">✏️ Editar</button>
+                            <button onclick="eliminarReceta(${r.id})" class="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded font-semibold">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function agregarIngredienteARecetaTemp() {
+            const ingId = parseInt(document.getElementById('recSelectIng').value);
+            const cant = parseFloat(document.getElementById('recCantIng').value);
+
+            if (!ingId || !cant || cant <= 0) {
+                alert('Selecciona un ingrediente y una cantidad válida.');
+                return;
+            }
+
+            const ing = ingredientes.find(i => i.id === ingId);
+            if (!ing) return;
+
+            tempIngredientesReceta.push({
+                ingrediente_id: ing.id,
+                nombre: ing.nombre,
+                cantidad_base: cant,
+                unidad: ing.unidad_medida
+            });
+
+            renderTempIngredientesReceta();
+            document.getElementById('recCantIng').value = '';
+        }
+
+        function renderTempIngredientesReceta() {
+            const ul = document.getElementById('listaTempIngReceta');
+            ul.innerHTML = '';
+            tempIngredientesReceta.forEach((item, index) => {
+                ul.innerHTML += `
+                    <li class="flex justify-between items-center py-1 border-b border-slate-100">
+                        <span>${item.nombre}: <strong>${item.cantidad_base} ${item.unidad}</strong></span>
+                        <button onclick="eliminarTempIngReceta(${index})" class="text-red-500 font-bold text-xs">✕</button>
+                    </li>
+                `;
+            });
+        }
+
+        function eliminarTempIngReceta(index) {
+            tempIngredientesReceta.splice(index, 1);
+            renderTempIngredientesReceta();
+        }
+
+        async function guardarReceta() {
+            const nombre = document.getElementById('recNombre').value.trim();
+            const porciones_base = parseInt(document.getElementById('recPorciones').value) || 10;
+            const instrucciones = document.getElementById('recInstrucciones').value.trim();
+
+            if (!nombre) {
+                alert('El nombre de la receta es obligatorio.');
+                return;
+            }
+
+            const payload = {
+                nombre,
+                porciones_base,
+                instrucciones,
+                ingredientes: tempIngredientesReceta.map(item => ({
+                    ingrediente_id: item.ingrediente_id,
+                    cantidad_base: item.cantidad_base
+                }))
+            };
+
+            try {
+                if (editandoRecetaId) {
+                    await fetch(`/api/recetas/${editandoRecetaId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    await fetch('/api/recetas', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                }
+                cancelarEdicionReceta();
+                await cargarRecetas();
+            } catch (e) {
+                console.error("Error guardando receta:", e);
+            }
+        }
+        
+        function editarReceta(id) {
+            const r = recetas.find(item => item.id == id);
+            if (!r) return;
+
+            editandoRecetaId = id;
+            document.getElementById('tituloFormReceta').innerText = 'Editar Receta';
+            document.getElementById('recNombre').value = r.nombre;
+            document.getElementById('recPorciones').value = r.porciones_base;
+            document.getElementById('recInstrucciones').value = r.instrucciones || '';
+
+            tempIngredientesReceta = (r.ingredientes || []).map(ing => ({
+                ingrediente_id: ing.ingrediente_id,
+                nombre: ing.ingrediente,
+                cantidad_base: ing.cantidad_base,
+                unidad: ing.unidad
+            }));
+
+            renderTempIngredientesReceta();
+            document.getElementById('btnGuardarReceta').innerText = 'Guardar Cambios';
+            document.getElementById('btnCancelarReceta').classList.remove('hidden');
+        }
+
+        function cancelarEdicionReceta() {
+            editandoRecetaId = null;
+            document.getElementById('tituloFormReceta').innerText = 'Crear Receta';
+            document.getElementById('recNombre').value = '';
+            document.getElementById('recPorciones').value = 10;
+            document.getElementById('recInstrucciones').value = '';
+            tempIngredientesReceta = [];
+            renderTempIngredientesReceta();
+            document.getElementById('btnGuardarReceta').innerText = 'Guardar Receta';
+            document.getElementById('btnCancelarReceta').classList.add('hidden');
+        }
+
+        async function eliminarReceta(id) {
+            if (!confirm('¿Eliminar esta receta?')) return;
+            try {
+                await fetch(`/api/recetas/${id}`, { method: 'DELETE' });
+                await cargarRecetas();
+            } catch (e) {
+                console.error("Error eliminando receta:", e);
+            }
+        }
+
+        function abrirModalDetalleReceta(id) {
+            const r = recetas.find(item => item.id == id);
+            if (!r) {
+                alert("No se encontró el detalle de esta receta.");
+                return;
+            }
+
+            document.getElementById('detRecetaNombre').innerText = r.nombre;
+            document.getElementById('detRecetaPorciones').innerText = `Raciones Base: ${r.porciones_base}`;
+
+            const ul = document.getElementById('detRecetaIngredientes');
+            ul.innerHTML = '';
+            if (r.ingredientes && r.ingredientes.length > 0) {
+                r.ingredientes.forEach(ing => {
+                    ul.innerHTML += `<li>• <strong>${ing.ingrediente}</strong>: ${ing.cantidad_base} ${ing.unidad}</li>`;
+                });
+            } else {
+                ul.innerHTML = '<li class="text-slate-400 italic">Sin ingredientes registrados.</li>';
+            }
+
+            document.getElementById('detRecetaInstrucciones').innerText = r.instrucciones || 'Sin instrucciones especificadas.';
+            document.getElementById('modalRecetaDetalle').classList.remove('hidden');
+        }
+
+        function cerrarModalDetalleReceta() {
+            document.getElementById('modalRecetaDetalle').classList.add('hidden');
+        }
     </script>
 </body>
 
