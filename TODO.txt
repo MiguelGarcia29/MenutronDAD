@@ -1,4 +1,0 @@
-1. Exportar/importar .SQL
-2. Opción gente fuera por salida: HECHO
-3. Opción gente con problemas alimenticios
-4. Aplicación conectada móvil solo de cada campamento
