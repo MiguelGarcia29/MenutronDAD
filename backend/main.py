@@ -1,12 +1,14 @@
 import os
+import sys
 import logging
 import threading
 import uvicorn
 import webview
+from pathlib import Path
 from datetime import datetime, timedelta
 from io import BytesIO
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Form
+from fastapi.responses import HTMLResponse, StreamingResponse, FileResponse
 from pydantic import BaseModel
 from typing import List, Optional
 from peewee import (
@@ -741,15 +743,220 @@ def pdf_cuadrante(camp_id: int):
         logger.error(f"Error generando PDF de cuadrante: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
-if not os.path.exists("static"): 
-    os.makedirs("static")
+# EXPORTAR E IMPORTAR BASE DE DATOS
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/api/database/export")
+def export_database():
+    try:
+        # 1. Ingredientes
+        ing_data = list(Ingrediente.select().dicts())
+        
+        # 2. Recetas con sus ingredientes
+        rec_data = []
+        for r in Receta.select():
+            rec_dict = {
+                "nombre": r.nombre,
+                "porciones_base": r.porciones_base,
+                "instrucciones": r.instrucciones,
+                "es_item_picnic": r.es_item_picnic,
+                "ingredientes": [
+                    {
+                        "ingrediente_nombre": rel.ingrediente.nombre,
+                        "cantidad_base": rel.cantidad_base
+                    } for rel in r.ingredientes_rel
+                ]
+            }
+            rec_data.append(rec_dict)
+        
+        # 3. Campamentos con censos y menús asociados
+        camp_data = []
+        for c in Campamento.select():
+            censos = [
+                {
+                    "fecha": censo.fecha,
+                    "rama_nombre": censo.rama.nombre,
+                    "num_participantes": censo.num_participantes,
+                    "num_responsables": censo.num_responsables,
+                    "esta_de_salida": censo.esta_de_salida,
+                    "tomas_ausentes": censo.tomas_ausentes
+                } for censo in c.censos
+            ]
+            
+            menus = []
+            for m in c.comidas:
+                menus.append({
+                    "fecha": m.fecha,
+                    "toma": m.toma,
+                    "rama_nombre": m.rama_especifica.nombre if m.rama_especifica else None,
+                    "es_picnic": m.es_picnic,
+                    "platos": [p.receta.nombre for p in m.platos]
+                })
+            
+            camp_data.append({
+                "nombre": c.nombre,
+                "fecha_inicio": c.fecha_inicio,
+                "fecha_fin": c.fecha_fin,
+                "censos": censos,
+                "menus": menus
+            })
+        
+        export_payload = {
+            "version": "1.0",
+            "fecha_exportacion": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "ingredientes": ing_data,
+            "recetas": rec_data,
+            "campamentos": camp_data
+        }
+        
+        json_bytes = json.dumps(export_payload, ensure_ascii=False, indent=2).encode('utf-8')
+        buffer = BytesIO(json_bytes)
+        
+        fecha_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+        return StreamingResponse(
+            buffer,
+            media_type="application/json",
+            headers={"Content-Disposition": f'attachment; filename="copia_seguridad_{fecha_str}.json"'}
+        )
+    except Exception as e:
+        logger.error(f"Error exportando base de datos: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/database/import")
+async def import_database(file: UploadFile = File(...), modo: str = Form("append")):
+    try:
+        content = await file.read()
+        data = json.loads(content.decode("utf-8"))
+        
+        with db.atomic():
+            # Si el modo es sobreescribir, se limpian las tablas dependientes primero
+            if modo == "overwrite":
+                MenuComidaPlato.delete().execute()
+                MenuComida.delete().execute()
+                CensoDiarioRama.delete().execute()
+                RecetaIngrediente.delete().execute()
+                Receta.delete().execute()
+                Ingrediente.delete().execute()
+                Campamento.delete().execute()
+            
+            # 1. Importar Ingredientes
+            ing_map = {}
+            for ing_item in data.get("ingredientes", []):
+                nombre = ing_item["nombre"]
+                ing, created = Ingrediente.get_or_create(
+                    nombre=nombre,
+                    defaults={
+                        "unidad_medida": ing_item.get("unidad_medida", "ud"),
+                        "coste_unidad": ing_item.get("coste_unidad", 0.0)
+                    }
+                )
+                if modo == "overwrite" or not created:
+                    ing.unidad_medida = ing_item.get("unidad_medida", ing.unidad_medida)
+                    ing.coste_unidad = ing_item.get("coste_unidad", ing.coste_unidad)
+                    ing.save()
+                ing_map[nombre] = ing
+                
+            # 2. Importar Recetas
+            rec_map = {}
+            for rec_item in data.get("recetas", []):
+                nombre = rec_item["nombre"]
+                rec, created = Receta.get_or_create(
+                    nombre=nombre,
+                    defaults={
+                        "porciones_base": rec_item.get("porciones_base", 10),
+                        "instrucciones": rec_item.get("instrucciones", ""),
+                        "es_item_picnic": rec_item.get("es_item_picnic", False)
+                    }
+                )
+                if not created:
+                    rec.porciones_base = rec_item.get("porciones_base", 10)
+                    rec.instrucciones = rec_item.get("instrucciones", "")
+                    rec.es_item_picnic = rec_item.get("es_item_picnic", False)
+                    rec.save()
+                    RecetaIngrediente.delete().where(RecetaIngrediente.receta == rec).execute()
+                
+                rec_map[nombre] = rec
+                
+                for ing_rel in rec_item.get("ingredientes", []):
+                    ing_nombre = ing_rel.get("ingrediente_nombre")
+                    if ing_nombre in ing_map:
+                        RecetaIngrediente.create(
+                            receta=rec,
+                            ingrediente=ing_map[ing_nombre],
+                            cantidad_base=ing_rel.get("cantidad_base", 1.0)
+                        )
+                        
+            # 3. Importar Campamentos (junto a sus censos y menús)
+            for camp_item in data.get("campamentos", []):
+                nombre_camp = camp_item["nombre"]
+                f_inicio = camp_item["fecha_inicio"]
+                f_fin = camp_item["fecha_fin"]
+                
+                if modo == "append":
+                    camp = Campamento.create(
+                        nombre=nombre_camp,
+                        fecha_inicio=f_inicio,
+                        fecha_fin=f_fin
+                    )
+                else:
+                    camp, _ = Campamento.get_or_create(
+                        nombre=nombre_camp,
+                        defaults={"fecha_inicio": f_inicio, "fecha_fin": f_fin}
+                    )
+                
+                # Censos
+                for c_item in camp_item.get("censos", []):
+                    rama_obj = Rama.get_or_none(Rama.nombre == c_item["rama_nombre"])
+                    if rama_obj:
+                        CensoDiarioRama.create(
+                            campamento=camp,
+                            fecha=c_item["fecha"],
+                            rama=rama_obj,
+                            num_participantes=c_item.get("num_participantes", 0),
+                            num_responsables=c_item.get("num_responsables", 0),
+                            esta_de_salida=c_item.get("esta_de_salida", False),
+                            tomas_ausentes=c_item.get("tomas_ausentes", "")
+                        )
+                
+                # Menús
+                for m_item in camp_item.get("menus", []):
+                    rama_spec = Rama.get_or_none(Rama.nombre == m_item["rama_nombre"]) if m_item.get("rama_nombre") else None
+                    menu_obj = MenuComida.create(
+                        campamento=camp,
+                        fecha=m_item["fecha"],
+                        toma=m_item["toma"],
+                        rama_especifica=rama_spec,
+                        es_picnic=m_item.get("es_picnic", False)
+                    )
+                    for plato_nombre in m_item.get("platos", []):
+                        if plato_nombre in rec_map:
+                            MenuComidaPlato.create(
+                                menu_comida=menu_obj,
+                                receta=rec_map[plato_nombre]
+                            )
+                            
+        return {"status": "ok", "message": "Importación completada con éxito."}
+    except Exception as e:
+        logger.error(f"Error importando base de datos: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error procesando el archivo: {str(e)}")
+
+    
+# Si es el ejecutable de PyInstaller:
+if getattr(sys, 'frozen', False):
+    BASE_DIR = Path(sys._MEIPASS)
+else:
+    # Modo desarrollo: main.py está en backend/, así que subimos 1 nivel a la raíz del proyecto
+    BASE_DIR = Path(__file__).resolve().parent.parent
+
+STATIC_DIR = BASE_DIR / "static"
+
+@app.get("/")
 def read_index():
-    if os.path.exists("static/index.html"):
-        with open("static/index.html", "r", encoding="utf-8") as f: 
-            return f.read()
-    return "<h1>Error: static/index.html no encontrado</h1>"
+    return FileResponse(STATIC_DIR / "index.html")
+
+@app.get("/info.html")
+def get_info_page():
+    return FileResponse(STATIC_DIR / "info.html")
 
 def start_backend(): 
     uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")

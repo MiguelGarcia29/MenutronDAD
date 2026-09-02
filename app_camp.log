@@ -191,3 +191,48 @@ KeyError: "Style 'Subtitle' not found in stylesheet"
 2026-09-02 00:08:12,868 [INFO] Base de datos inicializada correctamente.
 2026-09-02 00:16:04,363 [INFO] Base de datos inicializada correctamente.
 2026-09-02 00:18:06,609 [INFO] Creando campamento: 123
+2026-09-02 13:52:13,476 [INFO] Base de datos inicializada correctamente.
+2026-09-02 13:54:17,488 [INFO] Base de datos inicializada correctamente.
+2026-09-02 13:54:17,525 [ERROR] Form data requires "python-multipart" to be installed. 
+You can install "python-multipart" with: 
+
+pip install python-multipart
+
+2026-09-02 13:54:22,597 [INFO] Base de datos inicializada correctamente.
+2026-09-02 13:54:22,632 [ERROR] Form data requires "python-multipart" to be installed. 
+You can install "python-multipart" with: 
+
+pip install python-multipart
+
+2026-09-02 13:55:33,296 [INFO] Base de datos inicializada correctamente.
+2026-09-02 13:56:06,055 [INFO] Base de datos inicializada correctamente.
+2026-09-02 13:57:34,394 [INFO] Base de datos inicializada correctamente.
+2026-09-02 13:57:38,814 [INFO] Base de datos inicializada correctamente.
+2026-09-02 13:57:51,983 [INFO] Creando campamento: 123
+2026-09-02 13:58:35,156 [INFO] Base de datos inicializada correctamente.
+2026-09-02 13:59:34,315 [INFO] Base de datos inicializada correctamente.
+2026-09-02 13:59:53,575 [INFO] Base de datos inicializada correctamente.
+2026-09-02 14:00:04,662 [INFO] Creando campamento: 1
+2026-09-02 14:01:13,748 [INFO] Base de datos inicializada correctamente.
+2026-09-02 14:02:15,390 [INFO] Base de datos inicializada correctamente.
+2026-09-02 14:02:24,330 [INFO] Base de datos inicializada correctamente.
+2026-09-02 14:03:34,907 [INFO] Base de datos inicializada correctamente.
+2026-09-02 14:03:39,457 [INFO] Base de datos inicializada correctamente.
+2026-09-02 14:05:00,094 [INFO] Base de datos inicializada correctamente.
+2026-09-02 14:05:02,385 [INFO] Base de datos inicializada correctamente.
+2026-09-02 14:08:11,658 [INFO] Base de datos inicializada correctamente.
+2026-09-02 14:08:19,862 [INFO] Base de datos inicializada correctamente.
+2026-09-02 14:11:12,443 [INFO] Base de datos inicializada correctamente.
+2026-09-02 14:12:16,274 [INFO] Base de datos inicializada correctamente.
+2026-09-02 14:13:26,543 [INFO] Base de datos inicializada correctamente.
+2026-09-02 14:16:03,723 [INFO] Base de datos inicializada correctamente.
+2026-09-02 14:19:54,559 [INFO] Base de datos inicializada correctamente.
+2026-09-02 14:20:26,439 [INFO] Base de datos inicializada correctamente.
+2026-09-02 14:22:25,095 [INFO] Base de datos inicializada correctamente.
+2026-09-02 14:35:12,380 [INFO] Base de datos inicializada correctamente.
+2026-09-02 14:36:20,668 [INFO] Base de datos inicializada correctamente.
+2026-09-02 14:43:57,126 [INFO] Base de datos inicializada correctamente.
+2026-09-02 14:44:01,550 [INFO] Base de datos inicializada correctamente.
+2026-09-02 14:44:13,141 [INFO] Base de datos inicializada correctamente.
+2026-09-02 15:01:35,586 [INFO] Base de datos inicializada correctamente.
+2026-09-02 15:09:46,087 [INFO] Base de datos inicializada correctamente.

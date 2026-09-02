@@ -9,3 +9,6 @@
 # DONE
 
 - [X] Opción gente fuera por salida: HECHO
+
+
+pyinstaller --noconfirm GestorCocina.spec

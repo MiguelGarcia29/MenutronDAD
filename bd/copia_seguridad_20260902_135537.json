@@ -1,0 +1,1465 @@
+{
+  "version": "1.0",
+  "fecha_exportacion": "2026-09-02 13:55:37",
+  "ingredientes": [
+    {
+      "id": 1,
+      "nombre": "Arroz",
+      "unidad_medida": "kg",
+      "coste_unidad": 1.45
+    },
+    {
+      "id": 2,
+      "nombre": "Pasta",
+      "unidad_medida": "kg",
+      "coste_unidad": 1.3
+    },
+    {
+      "id": 3,
+      "nombre": "Macarrones",
+      "unidad_medida": "kg",
+      "coste_unidad": 1.35
+    },
+    {
+      "id": 4,
+      "nombre": "Pan",
+      "unidad_medida": "ud",
+      "coste_unidad": 0.85
+    },
+    {
+      "id": 5,
+      "nombre": "Pan de molde",
+      "unidad_medida": "paquete",
+      "coste_unidad": 1.6
+    },
+    {
+      "id": 6,
+      "nombre": "Leche",
+      "unidad_medida": "litro",
+      "coste_unidad": 1.05
+    },
+    {
+      "id": 7,
+      "nombre": "Yogur natural",
+      "unidad_medida": "ud",
+      "coste_unidad": 0.45
+    },
+    {
+      "id": 8,
+      "nombre": "Cereales",
+      "unidad_medida": "kg",
+      "coste_unidad": 3.2
+    },
+    {
+      "id": 9,
+      "nombre": "Galletas",
+      "unidad_medida": "paquete",
+      "coste_unidad": 1.5
+    },
+    {
+      "id": 10,
+      "nombre": "Cacao soluble",
+      "unidad_medida": "kg",
+      "coste_unidad": 6.5
+    },
+    {
+      "id": 11,
+      "nombre": "Azúcar",
+      "unidad_medida": "kg",
+      "coste_unidad": 1.2
+    },
+    {
+      "id": 12,
+      "nombre": "Aceite de oliva",
+      "unidad_medida": "litro",
+      "coste_unidad": 7.5
+    },
+    {
+      "id": 13,
+      "nombre": "Sal",
+      "unidad_medida": "kg",
+      "coste_unidad": 0.7
+    },
+    {
+      "id": 14,
+      "nombre": "Tomate frito",
+      "unidad_medida": "kg",
+      "coste_unidad": 2.2
+    },
+    {
+      "id": 15,
+      "nombre": "Tomate triturado",
+      "unidad_medida": "kg",
+      "coste_unidad": 1.7
+    },
+    {
+      "id": 16,
+      "nombre": "Atún",
+      "unidad_medida": "lata",
+      "coste_unidad": 1.15
+    },
+    {
+      "id": 17,
+      "nombre": "Maíz dulce",
+      "unidad_medida": "lata",
+      "coste_unidad": 0.95
+    },
+    {
+      "id": 18,
+      "nombre": "Aceitunas",
+      "unidad_medida": "kg",
+      "coste_unidad": 4.2
+    },
+    {
+      "id": 19,
+      "nombre": "Huevos",
+      "unidad_medida": "ud",
+      "coste_unidad": 0.22
+    },
+    {
+      "id": 20,
+      "nombre": "Pollo",
+      "unidad_medida": "kg",
+      "coste_unidad": 6.5
+    },
+    {
+      "id": 21,
+      "nombre": "Carne picada",
+      "unidad_medida": "kg",
+      "coste_unidad": 7.5
+    },
+    {
+      "id": 22,
+      "nombre": "Salchichas",
+      "unidad_medida": "paquete",
+      "coste_unidad": 2.8
+    },
+    {
+      "id": 23,
+      "nombre": "Chorizo",
+      "unidad_medida": "kg",
+      "coste_unidad": 8.9
+    },
+    {
+      "id": 24,
+      "nombre": "Lentejas",
+      "unidad_medida": "kg",
+      "coste_unidad": 2.1
+    },
+    {
+      "id": 25,
+      "nombre": "Garbanzos",
+      "unidad_medida": "kg",
+      "coste_unidad": 2.3
+    },
+    {
+      "id": 26,
+      "nombre": "Patatas",
+      "unidad_medida": "kg",
+      "coste_unidad": 1.6
+    },
+    {
+      "id": 27,
+      "nombre": "Cebolla",
+      "unidad_medida": "kg",
+      "coste_unidad": 1.5
+    },
+    {
+      "id": 28,
+      "nombre": "Ajo",
+      "unidad_medida": "kg",
+      "coste_unidad": 5.5
+    },
+    {
+      "id": 29,
+      "nombre": "Pimiento verde",
+      "unidad_medida": "kg",
+      "coste_unidad": 2.8
+    },
+    {
+      "id": 30,
+      "nombre": "Pimiento rojo",
+      "unidad_medida": "kg",
+      "coste_unidad": 3.2
+    },
+    {
+      "id": 31,
+      "nombre": "Zanahoria",
+      "unidad_medida": "kg",
+      "coste_unidad": 1.4
+    },
+    {
+      "id": 32,
+      "nombre": "Calabacín",
+      "unidad_medida": "kg",
+      "coste_unidad": 1.8
+    },
+    {
+      "id": 33,
+      "nombre": "Lechuga",
+      "unidad_medida": "ud",
+      "coste_unidad": 1.1
+    },
+    {
+      "id": 34,
+      "nombre": "Manzana",
+      "unidad_medida": "kg",
+      "coste_unidad": 2.2
+    },
+    {
+      "id": 35,
+      "nombre": "Plátano",
+      "unidad_medida": "kg",
+      "coste_unidad": 1.7
+    },
+    {
+      "id": 36,
+      "nombre": "Naranja",
+      "unidad_medida": "kg",
+      "coste_unidad": 1.8
+    },
+    {
+      "id": 37,
+      "nombre": "Limón",
+      "unidad_medida": "kg",
+      "coste_unidad": 2.2
+    },
+    {
+      "id": 38,
+      "nombre": "Queso",
+      "unidad_medida": "kg",
+      "coste_unidad": 8.5
+    },
+    {
+      "id": 39,
+      "nombre": "Jamón cocido",
+      "unidad_medida": "kg",
+      "coste_unidad": 7.9
+    },
+    {
+      "id": 40,
+      "nombre": "Mermelada",
+      "unidad_medida": "kg",
+      "coste_unidad": 3.8
+    },
+    {
+      "id": 41,
+      "nombre": "Mayonesa",
+      "unidad_medida": "kg",
+      "coste_unidad": 3.5
+    },
+    {
+      "id": 42,
+      "nombre": "Atún en lata",
+      "unidad_medida": "lata",
+      "coste_unidad": 1.15
+    },
+    {
+      "id": 43,
+      "nombre": "Caldo de pollo",
+      "unidad_medida": "litro",
+      "coste_unidad": 1.8
+    },
+    {
+      "id": 44,
+      "nombre": "Caldo de pescado",
+      "unidad_medida": "litro",
+      "coste_unidad": 2.2
+    },
+    {
+      "id": 45,
+      "nombre": "Harina",
+      "unidad_medida": "kg",
+      "coste_unidad": 1.1
+    },
+    {
+      "id": 46,
+      "nombre": "Chocolate",
+      "unidad_medida": "kg",
+      "coste_unidad": 8.5
+    },
+    {
+      "id": 47,
+      "nombre": "Nata para cocinar",
+      "unidad_medida": "litro",
+      "coste_unidad": 3.5
+    }
+  ],
+  "recetas": [
+    {
+      "nombre": "Tostadas con tomate y aceite",
+      "porciones_base": 10,
+      "instrucciones": "Tostar el pan. Triturar o rallar el tomate y repartir sobre las tostadas. Añadir aceite de oliva y una pizca de sal.",
+      "es_item_picnic": false,
+      "ingredientes": [
+        {
+          "ingrediente_nombre": "Pan",
+          "cantidad_base": 10.0
+        },
+        {
+          "ingrediente_nombre": "Tomate triturado",
+          "cantidad_base": 0.5
+        },
+        {
+          "ingrediente_nombre": "Aceite de oliva",
+          "cantidad_base": 0.1
+        },
+        {
+          "ingrediente_nombre": "Sal",
+          "cantidad_base": 0.02
+        }
+      ]
+    },
+    {
+      "nombre": "Desayuno de leche y cereales",
+      "porciones_base": 10,
+      "instrucciones": "Servir la leche fría o caliente junto con los cereales.",
+      "es_item_picnic": false,
+      "ingredientes": [
+        {
+          "ingrediente_nombre": "Leche",
+          "cantidad_base": 2.0
+        },
+        {
+          "ingrediente_nombre": "Cereales",
+          "cantidad_base": 0.5
+        }
+      ]
+    },
+    {
+      "nombre": "Yogur con plátano",
+      "porciones_base": 10,
+      "instrucciones": "Trocear los plátanos y servir con los yogures.",
+      "es_item_picnic": false,
+      "ingredientes": [
+        {
+          "ingrediente_nombre": "Yogur natural",
+          "cantidad_base": 10.0
+        },
+        {
+          "ingrediente_nombre": "Plátano",
+          "cantidad_base": 1.2
+        }
+      ]
+    },
+    {
+      "nombre": "Macarrones con tomate",
+      "porciones_base": 10,
+      "instrucciones": "Cocer los macarrones. Preparar el tomate frito en una cazuela y mezclar con la pasta. Añadir queso al gusto.",
+      "es_item_picnic": false,
+      "ingredientes": [
+        {
+          "ingrediente_nombre": "Macarrones",
+          "cantidad_base": 1.0
+        },
+        {
+          "ingrediente_nombre": "Tomate frito",
+          "cantidad_base": 1.0
+        },
+        {
+          "ingrediente_nombre": "Queso",
+          "cantidad_base": 0.25
+        },
+        {
+          "ingrediente_nombre": "Sal",
+          "cantidad_base": 0.02
+        }
+      ]
+    },
+    {
+      "nombre": "Arroz con pollo",
+      "porciones_base": 10,
+      "instrucciones": "Sofreír cebolla y pimiento. Añadir el pollo troceado y dorar. Incorporar el arroz y el caldo. Cocinar hasta que el arroz esté en su punto.",
+      "es_item_picnic": false,
+      "ingredientes": [
+        {
+          "ingrediente_nombre": "Arroz",
+          "cantidad_base": 0.9
+        },
+        {
+          "ingrediente_nombre": "Pollo",
+          "cantidad_base": 1.2
+        },
+        {
+          "ingrediente_nombre": "Cebolla",
+          "cantidad_base": 0.3
+        },
+        {
+          "ingrediente_nombre": "Pimiento rojo",
+          "cantidad_base": 0.25
+        },
+        {
+          "ingrediente_nombre": "Caldo de pollo",
+          "cantidad_base": 2.0
+        },
+        {
+          "ingrediente_nombre": "Aceite de oliva",
+          "cantidad_base": 0.1
+        },
+        {
+          "ingrediente_nombre": "Sal",
+          "cantidad_base": 0.02
+        }
+      ]
+    },
+    {
+      "nombre": "Lentejas con chorizo",
+      "porciones_base": 10,
+      "instrucciones": "Sofreír cebolla, ajo y chorizo. Añadir las lentejas, patatas y zanahoria. Cubrir con agua y cocinar hasta que las lentejas estén tiernas.",
+      "es_item_picnic": false,
+      "ingredientes": [
+        {
+          "ingrediente_nombre": "Lentejas",
+          "cantidad_base": 0.9
+        },
+        {
+          "ingrediente_nombre": "Chorizo",
+          "cantidad_base": 0.3
+        },
+        {
+          "ingrediente_nombre": "Patatas",
+          "cantidad_base": 0.7
+        },
+        {
+          "ingrediente_nombre": "Zanahoria",
+          "cantidad_base": 0.3
+        },
+        {
+          "ingrediente_nombre": "Cebolla",
+          "cantidad_base": 0.3
+        },
+        {
+          "ingrediente_nombre": "Ajo",
+          "cantidad_base": 0.03
+        },
+        {
+          "ingrediente_nombre": "Aceite de oliva",
+          "cantidad_base": 0.08
+        },
+        {
+          "ingrediente_nombre": "Sal",
+          "cantidad_base": 0.02
+        }
+      ]
+    },
+    {
+      "nombre": "Ensalada de pasta y atún",
+      "porciones_base": 10,
+      "instrucciones": "Cocer la pasta y dejar enfriar. Añadir atún, maíz, aceitunas y tomate. Aliñar con aceite y sal.",
+      "es_item_picnic": false,
+      "ingredientes": [
+        {
+          "ingrediente_nombre": "Pasta",
+          "cantidad_base": 0.8
+        },
+        {
+          "ingrediente_nombre": "Atún",
+          "cantidad_base": 8.0
+        },
+        {
+          "ingrediente_nombre": "Maíz dulce",
+          "cantidad_base": 3.0
+        },
+        {
+          "ingrediente_nombre": "Aceitunas",
+          "cantidad_base": 0.2
+        },
+        {
+          "ingrediente_nombre": "Tomate triturado",
+          "cantidad_base": 0.3
+        },
+        {
+          "ingrediente_nombre": "Aceite de oliva",
+          "cantidad_base": 0.08
+        },
+        {
+          "ingrediente_nombre": "Sal",
+          "cantidad_base": 0.02
+        }
+      ]
+    },
+    {
+      "nombre": "Tortilla de patatas",
+      "porciones_base": 10,
+      "instrucciones": "Pelar y cortar las patatas y la cebolla. Freír a fuego suave. Mezclar con los huevos y cuajar la tortilla.",
+      "es_item_picnic": false,
+      "ingredientes": [
+        {
+          "ingrediente_nombre": "Patatas",
+          "cantidad_base": 1.5
+        },
+        {
+          "ingrediente_nombre": "Huevos",
+          "cantidad_base": 20.0
+        },
+        {
+          "ingrediente_nombre": "Cebolla",
+          "cantidad_base": 0.3
+        },
+        {
+          "ingrediente_nombre": "Aceite de oliva",
+          "cantidad_base": 0.25
+        },
+        {
+          "ingrediente_nombre": "Sal",
+          "cantidad_base": 0.02
+        }
+      ]
+    },
+    {
+      "nombre": "Hamburguesa con patatas",
+      "porciones_base": 10,
+      "instrucciones": "Cocinar las hamburguesas a la plancha. Servir con pan y patatas.",
+      "es_item_picnic": false,
+      "ingredientes": [
+        {
+          "ingrediente_nombre": "Carne picada",
+          "cantidad_base": 1.2
+        },
+        {
+          "ingrediente_nombre": "Pan",
+          "cantidad_base": 10.0
+        },
+        {
+          "ingrediente_nombre": "Patatas",
+          "cantidad_base": 1.5
+        },
+        {
+          "ingrediente_nombre": "Aceite de oliva",
+          "cantidad_base": 0.12
+        },
+        {
+          "ingrediente_nombre": "Sal",
+          "cantidad_base": 0.02
+        }
+      ]
+    },
+    {
+      "nombre": "Garbanzos con verduras",
+      "porciones_base": 10,
+      "instrucciones": "Sofreír cebolla, ajo, pimiento y zanahoria. Añadir los garbanzos y cocinar unos minutos para integrar los sabores.",
+      "es_item_picnic": false,
+      "ingredientes": [
+        {
+          "ingrediente_nombre": "Garbanzos",
+          "cantidad_base": 0.9
+        },
+        {
+          "ingrediente_nombre": "Cebolla",
+          "cantidad_base": 0.3
+        },
+        {
+          "ingrediente_nombre": "Ajo",
+          "cantidad_base": 0.03
+        },
+        {
+          "ingrediente_nombre": "Pimiento verde",
+          "cantidad_base": 0.25
+        },
+        {
+          "ingrediente_nombre": "Zanahoria",
+          "cantidad_base": 0.3
+        },
+        {
+          "ingrediente_nombre": "Aceite de oliva",
+          "cantidad_base": 0.08
+        },
+        {
+          "ingrediente_nombre": "Sal",
+          "cantidad_base": 0.02
+        }
+      ]
+    },
+    {
+      "nombre": "Sándwich de jamón y queso",
+      "porciones_base": 10,
+      "instrucciones": "Montar los sándwiches con pan de molde, jamón cocido y queso. Servir fríos o tostados.",
+      "es_item_picnic": false,
+      "ingredientes": [
+        {
+          "ingrediente_nombre": "Pan de molde",
+          "cantidad_base": 20.0
+        },
+        {
+          "ingrediente_nombre": "Jamón cocido",
+          "cantidad_base": 0.4
+        },
+        {
+          "ingrediente_nombre": "Queso",
+          "cantidad_base": 0.3
+        }
+      ]
+    },
+    {
+      "nombre": "Ensalada de atún para picnic",
+      "porciones_base": 10,
+      "instrucciones": "Mezclar atún, maíz, aceitunas y lechuga. Repartir en recipientes individuales.",
+      "es_item_picnic": false,
+      "ingredientes": [
+        {
+          "ingrediente_nombre": "Atún",
+          "cantidad_base": 10.0
+        },
+        {
+          "ingrediente_nombre": "Maíz dulce",
+          "cantidad_base": 4.0
+        },
+        {
+          "ingrediente_nombre": "Aceitunas",
+          "cantidad_base": 0.2
+        },
+        {
+          "ingrediente_nombre": "Lechuga",
+          "cantidad_base": 2.0
+        }
+      ]
+    },
+    {
+      "nombre": "Fruta variada para picnic",
+      "porciones_base": 10,
+      "instrucciones": "Lavar y repartir las piezas de fruta entre los participantes.",
+      "es_item_picnic": false,
+      "ingredientes": [
+        {
+          "ingrediente_nombre": "Manzana",
+          "cantidad_base": 1.0
+        },
+        {
+          "ingrediente_nombre": "Plátano",
+          "cantidad_base": 1.0
+        },
+        {
+          "ingrediente_nombre": "Naranja",
+          "cantidad_base": 1.0
+        }
+      ]
+    },
+    {
+      "nombre": "Bizcocho de chocolate",
+      "porciones_base": 10,
+      "instrucciones": "Mezclar huevos, harina, azúcar, leche y chocolate. Hornear hasta que el bizcocho esté cocido.",
+      "es_item_picnic": false,
+      "ingredientes": [
+        {
+          "ingrediente_nombre": "Huevos",
+          "cantidad_base": 4.0
+        },
+        {
+          "ingrediente_nombre": "Harina",
+          "cantidad_base": 0.25
+        },
+        {
+          "ingrediente_nombre": "Azúcar",
+          "cantidad_base": 0.2
+        },
+        {
+          "ingrediente_nombre": "Leche",
+          "cantidad_base": 0.2
+        },
+        {
+          "ingrediente_nombre": "Chocolate",
+          "cantidad_base": 0.15
+        }
+      ]
+    },
+    {
+      "nombre": "Pasta con nata y pollo",
+      "porciones_base": 10,
+      "instrucciones": "Cocer la pasta. Saltear el pollo, añadir la nata y mezclar con la pasta. Rectificar de sal.",
+      "es_item_picnic": false,
+      "ingredientes": [
+        {
+          "ingrediente_nombre": "Pasta",
+          "cantidad_base": 0.9
+        },
+        {
+          "ingrediente_nombre": "Pollo",
+          "cantidad_base": 1.0
+        },
+        {
+          "ingrediente_nombre": "Nata para cocinar",
+          "cantidad_base": 0.5
+        },
+        {
+          "ingrediente_nombre": "Aceite de oliva",
+          "cantidad_base": 0.08
+        },
+        {
+          "ingrediente_nombre": "Sal",
+          "cantidad_base": 0.02
+        }
+      ]
+    }
+  ],
+  "campamentos": [
+    {
+      "nombre": "Campamento de Verano 2026",
+      "fecha_inicio": "2026-07-06",
+      "fecha_fin": "2026-07-12",
+      "censos": [
+        {
+          "fecha": "2026-07-06",
+          "rama_nombre": "Castores",
+          "num_participantes": 12,
+          "num_responsables": 3,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-06",
+          "rama_nombre": "Lobatos",
+          "num_participantes": 20,
+          "num_responsables": 4,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-06",
+          "rama_nombre": "Rangers",
+          "num_participantes": 18,
+          "num_responsables": 4,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-06",
+          "rama_nombre": "Pioneros",
+          "num_participantes": 15,
+          "num_responsables": 3,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-06",
+          "rama_nombre": "Rutas",
+          "num_participantes": 8,
+          "num_responsables": 2,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-06",
+          "rama_nombre": "Apoyo",
+          "num_participantes": 6,
+          "num_responsables": 3,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-06",
+          "rama_nombre": "Cocineros",
+          "num_participantes": 0,
+          "num_responsables": 4,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-07",
+          "rama_nombre": "Castores",
+          "num_participantes": 12,
+          "num_responsables": 3,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-07",
+          "rama_nombre": "Lobatos",
+          "num_participantes": 20,
+          "num_responsables": 4,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-07",
+          "rama_nombre": "Rangers",
+          "num_participantes": 18,
+          "num_responsables": 4,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-07",
+          "rama_nombre": "Pioneros",
+          "num_participantes": 15,
+          "num_responsables": 3,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-07",
+          "rama_nombre": "Rutas",
+          "num_participantes": 8,
+          "num_responsables": 2,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-07",
+          "rama_nombre": "Apoyo",
+          "num_participantes": 6,
+          "num_responsables": 3,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-07",
+          "rama_nombre": "Cocineros",
+          "num_participantes": 0,
+          "num_responsables": 4,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-09",
+          "rama_nombre": "Castores",
+          "num_participantes": 12,
+          "num_responsables": 3,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-09",
+          "rama_nombre": "Lobatos",
+          "num_participantes": 20,
+          "num_responsables": 4,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-09",
+          "rama_nombre": "Rangers",
+          "num_participantes": 18,
+          "num_responsables": 4,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-09",
+          "rama_nombre": "Pioneros",
+          "num_participantes": 15,
+          "num_responsables": 3,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-09",
+          "rama_nombre": "Rutas",
+          "num_participantes": 8,
+          "num_responsables": 2,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-09",
+          "rama_nombre": "Apoyo",
+          "num_participantes": 6,
+          "num_responsables": 3,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-09",
+          "rama_nombre": "Cocineros",
+          "num_participantes": 0,
+          "num_responsables": 4,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-10",
+          "rama_nombre": "Castores",
+          "num_participantes": 12,
+          "num_responsables": 3,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-10",
+          "rama_nombre": "Lobatos",
+          "num_participantes": 20,
+          "num_responsables": 4,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-10",
+          "rama_nombre": "Rangers",
+          "num_participantes": 18,
+          "num_responsables": 4,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-10",
+          "rama_nombre": "Pioneros",
+          "num_participantes": 15,
+          "num_responsables": 3,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-10",
+          "rama_nombre": "Rutas",
+          "num_participantes": 8,
+          "num_responsables": 2,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-10",
+          "rama_nombre": "Apoyo",
+          "num_participantes": 6,
+          "num_responsables": 3,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-10",
+          "rama_nombre": "Cocineros",
+          "num_participantes": 0,
+          "num_responsables": 4,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-11",
+          "rama_nombre": "Castores",
+          "num_participantes": 12,
+          "num_responsables": 3,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-11",
+          "rama_nombre": "Lobatos",
+          "num_participantes": 20,
+          "num_responsables": 4,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-11",
+          "rama_nombre": "Rangers",
+          "num_participantes": 18,
+          "num_responsables": 4,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-11",
+          "rama_nombre": "Pioneros",
+          "num_participantes": 15,
+          "num_responsables": 3,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-11",
+          "rama_nombre": "Rutas",
+          "num_participantes": 8,
+          "num_responsables": 2,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-11",
+          "rama_nombre": "Apoyo",
+          "num_participantes": 6,
+          "num_responsables": 3,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-11",
+          "rama_nombre": "Cocineros",
+          "num_participantes": 0,
+          "num_responsables": 4,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-12",
+          "rama_nombre": "Castores",
+          "num_participantes": 12,
+          "num_responsables": 3,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-12",
+          "rama_nombre": "Lobatos",
+          "num_participantes": 20,
+          "num_responsables": 4,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-12",
+          "rama_nombre": "Rangers",
+          "num_participantes": 18,
+          "num_responsables": 4,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-12",
+          "rama_nombre": "Pioneros",
+          "num_participantes": 15,
+          "num_responsables": 3,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-12",
+          "rama_nombre": "Rutas",
+          "num_participantes": 8,
+          "num_responsables": 2,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-12",
+          "rama_nombre": "Apoyo",
+          "num_participantes": 6,
+          "num_responsables": 3,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-12",
+          "rama_nombre": "Cocineros",
+          "num_participantes": 0,
+          "num_responsables": 4,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-08",
+          "rama_nombre": "Castores",
+          "num_participantes": 12,
+          "num_responsables": 3,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-08",
+          "rama_nombre": "Lobatos",
+          "num_participantes": 20,
+          "num_responsables": 4,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-08",
+          "rama_nombre": "Rangers",
+          "num_participantes": 18,
+          "num_responsables": 4,
+          "esta_de_salida": true,
+          "tomas_ausentes": "Desayuno,Almuerzo,Comida,Merienda"
+        },
+        {
+          "fecha": "2026-07-08",
+          "rama_nombre": "Pioneros",
+          "num_participantes": 15,
+          "num_responsables": 3,
+          "esta_de_salida": true,
+          "tomas_ausentes": "Desayuno,Almuerzo,Comida,Merienda"
+        },
+        {
+          "fecha": "2026-07-08",
+          "rama_nombre": "Rutas",
+          "num_participantes": 8,
+          "num_responsables": 2,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-08",
+          "rama_nombre": "Apoyo",
+          "num_participantes": 6,
+          "num_responsables": 3,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        },
+        {
+          "fecha": "2026-07-08",
+          "rama_nombre": "Cocineros",
+          "num_participantes": 0,
+          "num_responsables": 4,
+          "esta_de_salida": false,
+          "tomas_ausentes": ""
+        }
+      ],
+      "menus": [
+        {
+          "fecha": "2026-07-06",
+          "toma": "Desayuno",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Desayuno de leche y cereales"
+          ]
+        },
+        {
+          "fecha": "2026-07-06",
+          "toma": "Almuerzo",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Yogur con plátano"
+          ]
+        },
+        {
+          "fecha": "2026-07-06",
+          "toma": "Comida",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Arroz con pollo"
+          ]
+        },
+        {
+          "fecha": "2026-07-06",
+          "toma": "Merienda",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Sándwich de jamón y queso"
+          ]
+        },
+        {
+          "fecha": "2026-07-06",
+          "toma": "Cena",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Lentejas con chorizo"
+          ]
+        },
+        {
+          "fecha": "2026-07-07",
+          "toma": "Desayuno",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Desayuno de leche y cereales"
+          ]
+        },
+        {
+          "fecha": "2026-07-07",
+          "toma": "Almuerzo",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Yogur con plátano"
+          ]
+        },
+        {
+          "fecha": "2026-07-07",
+          "toma": "Comida",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Macarrones con tomate"
+          ]
+        },
+        {
+          "fecha": "2026-07-07",
+          "toma": "Merienda",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Sándwich de jamón y queso"
+          ]
+        },
+        {
+          "fecha": "2026-07-07",
+          "toma": "Cena",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Lentejas con chorizo"
+          ]
+        },
+        {
+          "fecha": "2026-07-08",
+          "toma": "Desayuno",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Desayuno de leche y cereales"
+          ]
+        },
+        {
+          "fecha": "2026-07-08",
+          "toma": "Almuerzo",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Yogur con plátano"
+          ]
+        },
+        {
+          "fecha": "2026-07-08",
+          "toma": "Comida",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Ensalada de pasta y atún"
+          ]
+        },
+        {
+          "fecha": "2026-07-08",
+          "toma": "Merienda",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Sándwich de jamón y queso"
+          ]
+        },
+        {
+          "fecha": "2026-07-08",
+          "toma": "Cena",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Lentejas con chorizo"
+          ]
+        },
+        {
+          "fecha": "2026-07-08",
+          "toma": "Comida",
+          "rama_nombre": "Rangers",
+          "es_picnic": false,
+          "platos": [
+            "Fruta variada para picnic"
+          ]
+        },
+        {
+          "fecha": "2026-07-08",
+          "toma": "Almuerzo",
+          "rama_nombre": "Rangers",
+          "es_picnic": false,
+          "platos": [
+            "Sándwich de jamón y queso"
+          ]
+        },
+        {
+          "fecha": "2026-07-08",
+          "toma": "Comida",
+          "rama_nombre": "Pioneros",
+          "es_picnic": false,
+          "platos": [
+            "Fruta variada para picnic"
+          ]
+        },
+        {
+          "fecha": "2026-07-08",
+          "toma": "Almuerzo",
+          "rama_nombre": "Pioneros",
+          "es_picnic": false,
+          "platos": [
+            "Sándwich de jamón y queso"
+          ]
+        },
+        {
+          "fecha": "2026-07-09",
+          "toma": "Desayuno",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Desayuno de leche y cereales"
+          ]
+        },
+        {
+          "fecha": "2026-07-09",
+          "toma": "Almuerzo",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Yogur con plátano"
+          ]
+        },
+        {
+          "fecha": "2026-07-09",
+          "toma": "Comida",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Garbanzos con verduras"
+          ]
+        },
+        {
+          "fecha": "2026-07-09",
+          "toma": "Merienda",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Sándwich de jamón y queso"
+          ]
+        },
+        {
+          "fecha": "2026-07-09",
+          "toma": "Cena",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Lentejas con chorizo"
+          ]
+        },
+        {
+          "fecha": "2026-07-10",
+          "toma": "Desayuno",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Desayuno de leche y cereales"
+          ]
+        },
+        {
+          "fecha": "2026-07-10",
+          "toma": "Almuerzo",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Yogur con plátano"
+          ]
+        },
+        {
+          "fecha": "2026-07-10",
+          "toma": "Comida",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Hamburguesa con patatas"
+          ]
+        },
+        {
+          "fecha": "2026-07-10",
+          "toma": "Merienda",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Sándwich de jamón y queso"
+          ]
+        },
+        {
+          "fecha": "2026-07-10",
+          "toma": "Cena",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Lentejas con chorizo"
+          ]
+        },
+        {
+          "fecha": "2026-07-11",
+          "toma": "Desayuno",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Desayuno de leche y cereales"
+          ]
+        },
+        {
+          "fecha": "2026-07-11",
+          "toma": "Almuerzo",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Yogur con plátano"
+          ]
+        },
+        {
+          "fecha": "2026-07-11",
+          "toma": "Comida",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Pasta con nata y pollo"
+          ]
+        },
+        {
+          "fecha": "2026-07-11",
+          "toma": "Merienda",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Sándwich de jamón y queso"
+          ]
+        },
+        {
+          "fecha": "2026-07-11",
+          "toma": "Cena",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Lentejas con chorizo"
+          ]
+        },
+        {
+          "fecha": "2026-07-12",
+          "toma": "Desayuno",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Desayuno de leche y cereales"
+          ]
+        },
+        {
+          "fecha": "2026-07-12",
+          "toma": "Almuerzo",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Yogur con plátano"
+          ]
+        },
+        {
+          "fecha": "2026-07-12",
+          "toma": "Comida",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Arroz con pollo"
+          ]
+        },
+        {
+          "fecha": "2026-07-12",
+          "toma": "Merienda",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Sándwich de jamón y queso"
+          ]
+        },
+        {
+          "fecha": "2026-07-12",
+          "toma": "Cena",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Lentejas con chorizo"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "123",
+      "fecha_inicio": "2026-09-09",
+      "fecha_fin": "2026-09-11",
+      "censos": [],
+      "menus": [
+        {
+          "fecha": "2026-09-09",
+          "toma": "Desayuno",
+          "rama_nombre": null,
+          "es_picnic": false,
+          "platos": [
+            "Tostadas con tomate y aceite"
+          ]
+        }
+      ]
+    }
+  ]
+}
