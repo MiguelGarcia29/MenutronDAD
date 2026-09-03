@@ -42,12 +42,14 @@ class Ingrediente(BaseModelDB):
     nombre = CharField(unique=True)
     unidad_medida = CharField()
     coste_unidad = FloatField(default=0.0)
+    alergenos = TextField(default="[]")
 
 class Receta(BaseModelDB):
     nombre = CharField()
     porciones_base = IntegerField(default=10)
     instrucciones = TextField(default="")
     es_item_picnic = BooleanField(default=False)
+    alergenos = TextField(default="[]")
 
 class RecetaIngrediente(BaseModelDB):
     receta = ForeignKeyField(Receta, backref='ingredientes_rel', on_delete='CASCADE')
@@ -70,6 +72,7 @@ class CensoDiarioRama(BaseModelDB):
     num_responsables = IntegerField(default=0)
     esta_de_salida = BooleanField(default=False)
     tomas_ausentes = CharField(default="")
+    alergenos_detalle = TextField(default="{}")
 
 class MenuComida(BaseModelDB):
     campamento = ForeignKeyField(Campamento, backref='comidas', on_delete='CASCADE')
@@ -81,6 +84,8 @@ class MenuComida(BaseModelDB):
 class MenuComidaPlato(BaseModelDB):
     menu_comida = ForeignKeyField(MenuComida, backref='platos', on_delete='CASCADE')
     receta = ForeignKeyField(Receta, backref='en_menus', on_delete='CASCADE')
+    es_alternativa = BooleanField(default=False)
+    para_alergeno = CharField(null=True, default=None)
 
 def init_db():
     if db.is_closed():
@@ -96,6 +101,19 @@ def init_db():
         db.execute_sql("ALTER TABLE receta RENAME COLUMN pasos TO instrucciones;")
     except Exception:
         pass
+
+    # Migraciones para alérgenos (compatibles con bases de datos existentes).
+    for tabla, columna, definicion in [
+        ("ingrediente", "alergenos", "TEXT DEFAULT '[]'"),
+        ("receta", "alergenos", "TEXT DEFAULT '[]'"),
+        ("censodiariorama", "alergenos_detalle", "TEXT DEFAULT '{}'"),
+        ("menucomidaplato", "es_alternativa", "INTEGER DEFAULT 0"),
+        ("menucomidaplato", "para_alergeno", "VARCHAR DEFAULT NULL"),
+    ]:
+        try:
+            db.execute_sql(f"ALTER TABLE {tabla} ADD COLUMN {columna} {definicion};")
+        except Exception:
+            pass
         
     Rama.delete().where(Rama.nombre == "Responsables").execute()
     ramas_correctas = ["Castores", "Lobatos", "Rangers", "Pioneros", "Rutas", "Apoyo", "Cocineros"]
@@ -125,6 +143,7 @@ class IngredienteCreate(BaseModel):
     nombre: str
     unidad_medida: str
     coste_unidad: float = 0.0
+    alergenos: List[str] = []
 
 class RecetaItem(BaseModel):
     ingrediente_id: int
@@ -134,6 +153,7 @@ class RecetaCreate(BaseModel):
     nombre: str
     porciones_base: int = 10
     instrucciones: str = ""
+    alergenos: List[str] = []
     ingredientes: List[RecetaItem]
 
 class CampamentoCreate(BaseModel):
@@ -147,12 +167,15 @@ class CensoItem(BaseModel):
     num_responsables: Optional[int] = 0
     esta_de_salida: Optional[bool] = False
     tomas_ausentes: Optional[List[str]] = []
+    alergenos_detalle: Optional[dict] = {}
 
 class AsignarComida(BaseModel):
     toma: str
     receta_id: int
     rama_id: Optional[int] = None
     es_picnic: bool = False
+    es_alternativa: bool = False
+    para_alergeno: Optional[str] = None
 
 def generar_fechas_campamento(f_inicio_str, f_fin_str):
     f_inicio = datetime.strptime(str(f_inicio_str), "%Y-%m-%d").date()
@@ -230,8 +253,8 @@ def get_ramas():
     return list(Rama.select().dicts())
 
 @app.get("/api/ingredientes")
-def get_ingredientes(): 
-    return list(Ingrediente.select().dicts())
+def get_ingredientes():
+    return [{**i, "alergenos": parsear_alergenos(i.get("alergenos"))} for i in Ingrediente.select().dicts()]
 
 @app.post("/api/ingredientes")
 def create_ingrediente(data: IngredienteCreate):
@@ -239,9 +262,10 @@ def create_ingrediente(data: IngredienteCreate):
     ing = Ingrediente.create(
         nombre=data.nombre,
         unidad_medida=data.unidad_medida,
-        coste_unidad=data.coste_unidad
+        coste_unidad=data.coste_unidad,
+        alergenos=json.dumps(data.alergenos, ensure_ascii=False)
     )
-    return {"id": ing.id, "nombre": ing.nombre, "unidad_medida": ing.unidad_medida, "coste_unidad": ing.coste_unidad}
+    return {"id": ing.id, "nombre": ing.nombre, "unidad_medida": ing.unidad_medida, "coste_unidad": ing.coste_unidad, "alergenos": data.alergenos}
 
 @app.put("/api/ingredientes/{ing_id}")
 def update_ingrediente(ing_id: int, data: IngredienteCreate):
@@ -250,8 +274,9 @@ def update_ingrediente(ing_id: int, data: IngredienteCreate):
     ing.nombre = data.nombre
     ing.unidad_medida = data.unidad_medida
     ing.coste_unidad = data.coste_unidad
+    ing.alergenos = json.dumps(data.alergenos, ensure_ascii=False)
     ing.save()
-    return {"id": ing.id, "nombre": ing.nombre, "unidad_medida": ing.unidad_medida, "coste_unidad": ing.coste_unidad}
+    return {"id": ing.id, "nombre": ing.nombre, "unidad_medida": ing.unidad_medida, "coste_unidad": ing.coste_unidad, "alergenos": data.alergenos}
 
 @app.delete("/api/ingredientes/{ing_id}")
 def delete_ingrediente(ing_id: int):
@@ -268,7 +293,8 @@ def get_recetas():
                 "ingrediente_id": rel.ingrediente.id,
                 "ingrediente": rel.ingrediente.nombre, 
                 "unidad": rel.ingrediente.unidad_medida, 
-                "cantidad_base": rel.cantidad_base
+                "cantidad_base": rel.cantidad_base,
+                "alergenos": parsear_alergenos(rel.ingrediente.alergenos)
             } for rel in r.ingredientes_rel
         ]
         resultado.append({
@@ -276,6 +302,7 @@ def get_recetas():
             "nombre": r.nombre, 
             "porciones_base": r.porciones_base, 
             "instrucciones": r.instrucciones,
+            "alergenos": obtener_alergenos_receta(r),
             "ingredientes": ings
         })
     return resultado
@@ -288,7 +315,8 @@ def create_receta(data: RecetaCreate):
         r = Receta.create(
             nombre=data.nombre, 
             porciones_base=data.porciones_base, 
-            instrucciones=data.instrucciones
+            instrucciones=data.instrucciones,
+            alergenos=json.dumps(data.alergenos, ensure_ascii=False)
         )
         for item in data.ingredientes: 
             RecetaIngrediente.create(
@@ -307,6 +335,7 @@ def update_receta(rec_id: int, data: RecetaCreate):
         r.nombre = data.nombre
         r.porciones_base = data.porciones_base
         r.instrucciones = data.instrucciones
+        r.alergenos = json.dumps(data.alergenos, ensure_ascii=False)
         r.save()
         
         RecetaIngrediente.delete().where(RecetaIngrediente.receta == r).execute()
@@ -374,7 +403,8 @@ def get_censo(camp_id: int, fecha: str):
             "num_participantes": c.num_participantes,
             "num_responsables": c.num_responsables,
             "esta_de_salida": c.esta_de_salida,
-            "tomas_ausentes": [t.strip() for t in (c.tomas_ausentes or "").split(",") if t.strip()]
+            "tomas_ausentes": [t.strip() for t in (c.tomas_ausentes or "").split(",") if t.strip()],
+            "alergenos_detalle": obtener_alergenos_censo(c)
         }
         for c in censos
     ]
@@ -399,7 +429,8 @@ def copiar_censo_todos(camp_id: int, datos: List[CensoItem]):
                         'num_participantes': item.num_participantes or 0,
                         'num_responsables': item.num_responsables or 0,
                         'esta_de_salida': bool(item.esta_de_salida),
-                        'tomas_ausentes': t_str
+                        'tomas_ausentes': t_str,
+                    'alergenos_detalle': json.dumps(item.alergenos_detalle or {}, ensure_ascii=False)
                     })
             if filas:
                 for i in range(0, len(filas), 100):
@@ -430,7 +461,8 @@ def save_censo(camp_id: int, fecha: str, datos: List[CensoItem]):
                     'num_participantes': item.num_participantes or 0,
                     'num_responsables': item.num_responsables or 0,
                     'esta_de_salida': bool(item.esta_de_salida),
-                    'tomas_ausentes': t_str
+                    'tomas_ausentes': t_str,
+                    'alergenos_detalle': json.dumps(item.alergenos_detalle or {}, ensure_ascii=False)
                 })
             if filas:
                 CensoDiarioRama.insert_many(filas).execute()
@@ -447,15 +479,36 @@ def get_cuadrante(camp_id: int):
     cuadrante = []
     
     for f in fechas:
+        censos_dia = list(CensoDiarioRama.select().where((CensoDiarioRama.campamento_id == camp_id) & (CensoDiarioRama.fecha == f)))
         fila = {"fecha": f, "tomas": {}}
         for t in tomas:
-            comidas = MenuComida.select().where((MenuComida.campamento_id == camp_id) & (MenuComida.fecha == f) & (MenuComida.toma == t))
-            platos_str = []
+            comidas = list(MenuComida.select().where((MenuComida.campamento_id == camp_id) & (MenuComida.fecha == f) & (MenuComida.toma == t)))
+            platos = []
+            alertas = []
             for c in comidas:
                 prefix = f"[{c.rama_especifica.nombre}]" if c.rama_especifica else ""
                 for p in c.platos:
-                    platos_str.append(f"{prefix} {p.receta.nombre}".strip())
-            fila["tomas"][t] = " | ".join(platos_str) if platos_str else "-"
+                    if p.es_alternativa:
+                        platos.append({"nombre": p.receta.nombre, "receta_id": p.receta.id, "es_alternativa": True, "para_alergeno": p.para_alergeno, "prefijo": prefix})
+                        continue
+                    alergenos = obtener_alergenos_receta(p.receta)
+                    faltantes = []
+                    for alergeno in alergenos:
+                        afectados = contar_afectados_alergeno(c, censos_dia, alergeno)
+                        if afectados <= 0:
+                            continue
+                        cubierta = any(
+                            alt.rama_especifica_id in (None, c.rama_especifica_id) and
+                            any(ap.es_alternativa and ap.para_alergeno == alergeno for ap in alt.platos)
+                            for alt in comidas
+                            if alt.id != c.id
+                        )
+                        if not cubierta:
+                            faltantes.append({"alergeno": alergeno, "cantidad": afectados})
+                    platos.append({"nombre": p.receta.nombre, "receta_id": p.receta.id, "es_alternativa": False, "para_alergeno": None, "prefijo": prefix, "tiene_alerta": bool(faltantes)})
+                    if faltantes:
+                        alertas.extend(faltantes)
+            fila["tomas"][t] = {"platos": platos, "alertas": alertas} if platos or alertas else "-"
         cuadrante.append(fila)
     return cuadrante
 
@@ -464,15 +517,87 @@ def get_comidas_dia(camp_id: int, fecha: str):
     comidas = MenuComida.select().where((MenuComida.campamento_id == camp_id) & (MenuComida.fecha == str(fecha)))
     resultado = []
     for c in comidas:
-        platos = [p.receta.nombre for p in c.platos]
+        platos = [{"nombre": p.receta.nombre, "receta_id": p.receta.id, "es_alternativa": p.es_alternativa, "para_alergeno": p.para_alergeno, "alergenos": obtener_alergenos_receta(p.receta)} for p in c.platos]
         destino = f"Solo {c.rama_especifica.nombre}" if c.rama_especifica else "Todo el Campamento"
         resultado.append({
             "id": c.id,
             "toma": c.toma,
             "destino": destino,
-            "plato": ", ".join(platos)
+            "platos": platos,
+            "plato": ", ".join(p["nombre"] for p in platos)
         })
     return resultado
+
+ALERGENOS_VALIDOS = ["celiaco", "lactosa", "otros"]
+
+def parsear_alergenos(valor):
+    if not valor:
+        return []
+    if isinstance(valor, list):
+        return [str(x).lower() for x in valor]
+    try:
+        parsed = json.loads(valor)
+        return [str(x).lower() for x in parsed] if isinstance(parsed, list) else []
+    except Exception:
+        return []
+
+def obtener_alergenos_receta(receta):
+    marcados = set(parsear_alergenos(receta.alergenos))
+    # También se consideran los alérgenos marcados en sus ingredientes.
+    for rel in receta.ingredientes_rel:
+        marcados.update(parsear_alergenos(rel.ingrediente.alergenos))
+    return sorted(a for a in marcados if a in ALERGENOS_VALIDOS)
+
+def obtener_alergenos_censo(censo):
+    raw = censo.alergenos_detalle or "{}"
+    if isinstance(raw, dict):
+        data = raw
+    else:
+        try:
+            data = json.loads(raw)
+        except Exception:
+            data = {}
+    return {a: max(0, int(data.get(a, 0) or 0)) for a in ALERGENOS_VALIDOS}
+
+def contar_comensales_base(comida, censos_del_dia):
+    """Calcula comensales y excluye de la receta estándar a quienes necesitan alternativa."""
+    es_pic = es_comida_picnic(comida)
+    candidatos = []
+    if comida.rama_especifica_id:
+        c_rama = next((c for c in censos_del_dia if c.rama_id == comida.rama_especifica_id), None)
+        if c_rama:
+            if es_pic or not es_rama_ausente_en_toma(c_rama, comida.toma):
+                candidatos.append(c_rama)
+    else:
+        candidatos = [c for c in censos_del_dia if (es_rama_ausente_en_toma(c, comida.toma) if es_pic else not es_rama_ausente_en_toma(c, comida.toma))]
+    return sum((c.num_participantes or 0) + (c.num_responsables or 0) for c in candidatos)
+
+def contar_afectados_alergeno(comida, censos_del_dia, alergeno):
+    es_pic = es_comida_picnic(comida)
+    total = 0
+    censos = []
+    if comida.rama_especifica_id:
+        c = next((x for x in censos_del_dia if x.rama_id == comida.rama_especifica_id), None)
+        if c: censos = [c]
+    else:
+        censos = censos_del_dia
+    for c in censos:
+        if not (es_pic or not es_rama_ausente_en_toma(c, comida.toma)):
+            continue
+        total += obtener_alergenos_censo(c).get(alergeno, 0)
+    return total
+
+def calcular_comensales_para_receta(comida, receta, censos_del_dia, es_alternativa=False, para_alergeno=None):
+    base = contar_comensales_base(comida, censos_del_dia)
+    if es_alternativa and para_alergeno:
+        return contar_afectados_alergeno(comida, censos_del_dia, para_alergeno)
+    alergenos = obtener_alergenos_receta(receta)
+    if not alergenos:
+        return base
+    # Sin información individual, se resta el máximo para evitar doble descuento
+    # de una misma persona con más de una intolerancia registrada.
+    afectados = max((contar_afectados_alergeno(comida, censos_del_dia, a) for a in alergenos), default=0)
+    return max(0, base - afectados)
 
 def es_rama_ausente_en_toma(censo, toma):
     """
@@ -554,7 +679,12 @@ def agendar_comida(camp_id: int, fecha: str, data: AsignarComida):
         rama_especifica_id=data.rama_id, 
         es_picnic=bool(data.es_picnic)
     )
-    MenuComidaPlato.create(menu_comida=comida, receta=receta)
+    MenuComidaPlato.create(
+        menu_comida=comida,
+        receta=receta,
+        es_alternativa=bool(data.es_alternativa),
+        para_alergeno=data.para_alergeno if data.es_alternativa else None
+    )
     return {"status": "ok"}
 
 @app.delete("/api/campamentos/{camp_id}/comidas/{comida_id}")
@@ -589,10 +719,11 @@ def pdf_lista_compra(camp_id: int):
             
             lista_dia = {}
             for comida in comidas:
-                comensales = calcular_comensales_comida(comida, censos)
-
                 for plato in comida.platos:
                     receta = plato.receta
+                    comensales = calcular_comensales_para_receta(
+                        comida, receta, censos, plato.es_alternativa, plato.para_alergeno
+                    )
                     factor = comensales / receta.porciones_base if receta.porciones_base > 0 else 1
                     for rel in receta.ingredientes_rel:
                         ing = rel.ingrediente
@@ -749,7 +880,7 @@ def pdf_cuadrante(camp_id: int):
 def export_database():
     try:
         # 1. Ingredientes
-        ing_data = list(Ingrediente.select().dicts())
+        ing_data = [{**i, "alergenos": parsear_alergenos(i.get("alergenos"))} for i in Ingrediente.select().dicts()]
         
         # 2. Recetas con sus ingredientes
         rec_data = []
@@ -759,6 +890,7 @@ def export_database():
                 "porciones_base": r.porciones_base,
                 "instrucciones": r.instrucciones,
                 "es_item_picnic": r.es_item_picnic,
+                "alergenos": obtener_alergenos_receta(r),
                 "ingredientes": [
                     {
                         "ingrediente_nombre": rel.ingrediente.nombre,
@@ -778,7 +910,8 @@ def export_database():
                     "num_participantes": censo.num_participantes,
                     "num_responsables": censo.num_responsables,
                     "esta_de_salida": censo.esta_de_salida,
-                    "tomas_ausentes": censo.tomas_ausentes
+                    "tomas_ausentes": censo.tomas_ausentes,
+                    "alergenos_detalle": obtener_alergenos_censo(censo)
                 } for censo in c.censos
             ]
             
@@ -789,7 +922,7 @@ def export_database():
                     "toma": m.toma,
                     "rama_nombre": m.rama_especifica.nombre if m.rama_especifica else None,
                     "es_picnic": m.es_picnic,
-                    "platos": [p.receta.nombre for p in m.platos]
+                    "platos": [{"nombre": p.receta.nombre, "es_alternativa": p.es_alternativa, "para_alergeno": p.para_alergeno} for p in m.platos]
                 })
             
             camp_data.append({
@@ -847,12 +980,14 @@ async def import_database(file: UploadFile = File(...), modo: str = Form("append
                     nombre=nombre,
                     defaults={
                         "unidad_medida": ing_item.get("unidad_medida", "ud"),
-                        "coste_unidad": ing_item.get("coste_unidad", 0.0)
+                        "coste_unidad": ing_item.get("coste_unidad", 0.0),
+                        "alergenos": json.dumps(ing_item.get("alergenos", []), ensure_ascii=False)
                     }
                 )
                 if modo == "overwrite" or not created:
                     ing.unidad_medida = ing_item.get("unidad_medida", ing.unidad_medida)
                     ing.coste_unidad = ing_item.get("coste_unidad", ing.coste_unidad)
+                    ing.alergenos = json.dumps(ing_item.get("alergenos", parsear_alergenos(ing.alergenos)), ensure_ascii=False)
                     ing.save()
                 ing_map[nombre] = ing
                 
@@ -865,13 +1000,15 @@ async def import_database(file: UploadFile = File(...), modo: str = Form("append
                     defaults={
                         "porciones_base": rec_item.get("porciones_base", 10),
                         "instrucciones": rec_item.get("instrucciones", ""),
-                        "es_item_picnic": rec_item.get("es_item_picnic", False)
+                        "es_item_picnic": rec_item.get("es_item_picnic", False),
+                        "alergenos": json.dumps(rec_item.get("alergenos", []), ensure_ascii=False)
                     }
                 )
                 if not created:
                     rec.porciones_base = rec_item.get("porciones_base", 10)
                     rec.instrucciones = rec_item.get("instrucciones", "")
                     rec.es_item_picnic = rec_item.get("es_item_picnic", False)
+                    rec.alergenos = json.dumps(rec_item.get("alergenos", parsear_alergenos(rec.alergenos)), ensure_ascii=False)
                     rec.save()
                     RecetaIngrediente.delete().where(RecetaIngrediente.receta == rec).execute()
                 
@@ -915,7 +1052,8 @@ async def import_database(file: UploadFile = File(...), modo: str = Form("append
                             num_participantes=c_item.get("num_participantes", 0),
                             num_responsables=c_item.get("num_responsables", 0),
                             esta_de_salida=c_item.get("esta_de_salida", False),
-                            tomas_ausentes=c_item.get("tomas_ausentes", "")
+                            tomas_ausentes=c_item.get("tomas_ausentes", ""),
+                            alergenos_detalle=json.dumps(c_item.get("alergenos_detalle", {}), ensure_ascii=False)
                         )
                 
                 # Menús
@@ -928,11 +1066,19 @@ async def import_database(file: UploadFile = File(...), modo: str = Form("append
                         rama_especifica=rama_spec,
                         es_picnic=m_item.get("es_picnic", False)
                     )
-                    for plato_nombre in m_item.get("platos", []):
+                    for plato_item in m_item.get("platos", []):
+                        if isinstance(plato_item, str):
+                            plato_nombre, es_alt, para_alg = plato_item, False, None
+                        else:
+                            plato_nombre = plato_item.get("nombre")
+                            es_alt = bool(plato_item.get("es_alternativa", False))
+                            para_alg = plato_item.get("para_alergeno")
                         if plato_nombre in rec_map:
                             MenuComidaPlato.create(
                                 menu_comida=menu_obj,
-                                receta=rec_map[plato_nombre]
+                                receta=rec_map[plato_nombre],
+                                es_alternativa=es_alt,
+                                para_alergeno=para_alg
                             )
                             
         return {"status": "ok", "message": "Importación completada con éxito."}
@@ -957,6 +1103,10 @@ def read_index():
 @app.get("/info.html")
 def get_info_page():
     return FileResponse(STATIC_DIR / "info.html")
+
+@app.get('/favicon.ico')
+def favicon():
+    return FileResponse(STATIC_DIR / "favicon.ico")
 
 def start_backend(): 
     uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")
