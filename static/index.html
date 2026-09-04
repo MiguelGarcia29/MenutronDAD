@@ -16,6 +16,17 @@
             color: #059669;
             font-weight: bold;
         }
+
+        .alergeno-badge {
+            display: inline-flex;
+            align-items: center;
+            font-size: .65rem;
+            font-weight: 700;
+            padding: .15rem .4rem;
+            border-radius: 9999px;
+            border: 1px solid;
+            margin: .1rem;
+        }
     </style>
 </head>
 
@@ -65,7 +76,8 @@
             <button onclick="switchTab('tab-recetas')" id="btn-tab-recetas"
                 class="tab-btn py-3 px-5 text-slate-600 hover:text-emerald-700 whitespace-nowrap">📖 Recetas</button>
             <button onclick="switchTab('tab-info')" id="btn-tab-info"
-                class="tab-btn py-3 px-5 text-slate-600 hover:text-emerald-700 whitespace-nowrap ml-auto">ℹ️ Información</button>
+                class="tab-btn py-3 px-5 text-slate-600 hover:text-emerald-700 whitespace-nowrap ml-auto">ℹ️
+                Información</button>
         </nav>
 
         <!-- PESTAÑA 0: CAMPAMENTOS -->
@@ -124,6 +136,9 @@
                                 <th class="p-3">Rama</th>
                                 <th class="p-3 text-center">Participantes</th>
                                 <th class="p-3 text-center">Responsables</th>
+                                <th class="p-3 text-center">🚫 Celíaco</th>
+                                <th class="p-3 text-center">🥛 Lactosa</th>
+                                <th class="p-3 text-center">⚠️ Otros</th>
                                 <th class="p-3 text-center">¿De Salida?</th>
                                 <th class="p-3">Tomas Ausentes</th>
                             </tr>
@@ -184,8 +199,8 @@
                         <label class="block text-xs font-semibold mb-1">Toma</label>
                         <select id="menuToma" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
                             <option value="Desayuno">Desayuno</option>
-                            <option value="Almuerzo">Almuerzo</option>
                             <option value="Comida">Comida</option>
+                            <option value="Almuerzo">Almuerzo</option>
                             <option value="Merienda">Merienda</option>
                             <option value="Cena">Cena</option>
                         </select>
@@ -202,6 +217,20 @@
                         <input type="text" id="menuRecetaInput" list="menuRecetaList" placeholder="🔍 Buscar receta..."
                             class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-emerald-500">
                         <datalist id="menuRecetaList"></datalist>
+                    </div>
+                    <div class="md:col-span-2 flex flex-wrap items-center gap-3">
+                        <label class="inline-flex items-center gap-2 text-xs font-semibold cursor-pointer">
+                            <input type="checkbox" id="menuEsAlternativa" onchange="toggleSelectorAlergenoMenu()"
+                                class="w-4 h-4 text-emerald-600 rounded">
+                            Es menú alternativo
+                        </label>
+                        <select id="menuParaAlergeno" disabled
+                            class="border border-slate-300 rounded-lg p-2 text-xs bg-white opacity-50">
+                            <option value="">Alternativa para...</option>
+                            <option value="celiaco">🚫 Celíaco / gluten</option>
+                            <option value="lactosa">🥛 Lactosa</option>
+                            <option value="otros">⚠️ Otros</option>
+                        </select>
                     </div>
                     <button onclick="agendarComida()"
                         class="bg-emerald-700 hover:bg-emerald-800 text-white font-medium p-2 rounded-lg text-sm shadow">+
@@ -233,6 +262,15 @@
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Coste por Unidad (€)</label>
                             <input type="number" step="0.01" id="ingCoste" placeholder="0.00"
                                 class="w-full border p-2 text-sm rounded-lg">
+                        </div>
+                        <div class="border-t border-slate-200 pt-3">
+                            <label class="block text-xs font-semibold text-slate-600 mb-2">Alérgenos /
+                                intolerancias</label>
+                            <div class="grid grid-cols-3 gap-2 text-xs"><label class="flex items-center gap-1"><input
+                                        type="checkbox" id="ingAlergenoCeliaco"> Celíaco</label><label
+                                    class="flex items-center gap-1"><input type="checkbox" id="ingAlergenoLactosa">
+                                    Lactosa</label><label class="flex items-center gap-1"><input type="checkbox"
+                                        id="ingAlergenoOtros"> Otros</label></div>
                         </div>
                         <div class="flex gap-2 pt-2">
                             <button onclick="guardarIngrediente()" id="btnGuardarIngrediente"
@@ -293,6 +331,18 @@
                                 class="text-xs space-y-1 bg-white p-2 border rounded-lg max-h-36 overflow-y-auto"></ul>
                         </div>
 
+                        <div class="border-t border-slate-200 pt-3">
+                            <label class="block text-xs font-semibold text-slate-600 mb-2">Alérgenos / intolerancias de
+                                la receta</label>
+                            <div class="grid grid-cols-3 gap-2 text-xs"><label class="flex items-center gap-1"><input
+                                        type="checkbox" id="recAlergenoCeliaco"> 🚫 Celíaco</label><label
+                                    class="flex items-center gap-1"><input type="checkbox" id="recAlergenoLactosa"> 🥛
+                                    Lactosa</label><label class="flex items-center gap-1"><input type="checkbox"
+                                        id="recAlergenoOtros"> ⚠️ Otros</label></div>
+                            <p class="text-[10px] text-slate-400 mt-1">También se tendrán en cuenta los alérgenos
+                                marcados en sus ingredientes.</p>
+                        </div>
+
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Pasos / Instrucciones de
                                 Preparación</label>
@@ -329,12 +379,12 @@
     </div>
 
     <!-- PESTAÑA 5: INFORMACIÓN -->
-        <section id="tab-info" class="tab-content hidden bg-white p-6 rounded-xl shadow-sm">
-            <!-- Aquí se inyectará el contenido de info.html -->
-            <div id="contenidoInfo" class="space-y-4">
-                <p class="text-slate-400 text-center py-8 text-sm">Cargando información...</p>
-            </div>
-        </section>
+    <section id="tab-info" class="tab-content hidden bg-white p-6 rounded-xl shadow-sm">
+        <!-- Aquí se inyectará el contenido de info.html -->
+        <div id="contenidoInfo" class="space-y-4">
+            <p class="text-slate-400 text-center py-8 text-sm">Cargando información...</p>
+        </div>
+    </section>
 
     <!-- MODAL CAMPAMENTO -->
     <div id="modalCampamento" class="fixed inset-0 bg-black/50 hidden flex justify-center items-center p-4 z-50">
@@ -464,7 +514,7 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        const TOMAS = ["Desayuno", "Almuerzo", "Comida", "Merienda", "Cena"];
+        const TOMAS = ["Desayuno",  "Comida", "Almuerzo", "Merienda", "Cena"];
 
         let campamentos = [];
         let ingredientes = [];
@@ -528,11 +578,19 @@
                     const platoTexto = item.plato || "";
                     const actionClick = `abrirFichaAlimentoPorNombre('${platoTexto.replace(/'/g, "\\'")}')`;
 
+                    const platosHtml = (item.platos || []).map(plato => {
+                        const badges = renderBadges(plato.alergenos || []);
+                        const alternativa = plato.es_alternativa && plato.para_alergeno
+                            ? `<span class="ml-1 text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full font-bold">🔄 Alternativa ${nombreAlergeno(plato.para_alergeno)}</span>`
+                            : '';
+                        return `<div class="mb-1"><span class="font-semibold text-slate-800">📖 ${plato.nombre}</span>${alternativa}${badges ? `<div class="mt-1">${badges}</div>` : ''}</div>`;
+                    }).join('');
+
                     div.innerHTML = `
                         <div class="cursor-pointer flex-1 mr-2" onclick="${actionClick}">
-                            <span class="font-bold text-emerald-700">[${item.toma}]</span> 
-                            <span class="font-semibold text-slate-800 hover:text-emerald-700 underline underline-offset-2">📖 ${platoTexto}</span>
-                            <span class="text-xs text-slate-500 block mt-0.5">Destino: ${item.destino} • <span class="text-emerald-600 font-medium">Ver Ficha Receta 🔍</span></span>
+                            <div><span class="font-bold text-emerald-700">[${item.toma}]</span></div>
+                            ${platosHtml || `<span class="font-semibold text-slate-800">📖 ${platoTexto}</span>`}
+                            <span class="text-xs text-slate-500 block mt-1">Destino: ${item.destino} • <span class="text-emerald-600 font-medium">Ver Ficha Receta 🔍</span></span>
                         </div>
                         <button onclick="eliminarComida(${item.id})" 
                                 class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold rounded-lg transition shadow-sm">
@@ -866,7 +924,7 @@
                 if (res.ok) censoData = await res.json();
 
                 ramas.forEach(r => {
-                    const d = censoData.find(item => item.rama_id == r.id) || { num_participantes: 0, num_responsables: 0, esta_de_salida: false, tomas_ausentes: [] };
+                    const d = censoData.find(item => item.rama_id == r.id) || { num_participantes: 0, num_responsables: 0, esta_de_salida: false, tomas_ausentes: [], alergenos_detalle: {} };
                     const estaSalida = d.esta_de_salida;
 
                     tbody.innerHTML += `
@@ -874,6 +932,7 @@
                             <td class="p-3 font-semibold text-slate-700">${r.nombre}</td>
                             <td class="p-3 text-center"><input type="number" min="0" value="${d.num_participantes}" class="w-16 border rounded text-center p-1 censo-chavales"></td>
                             <td class="p-3 text-center"><input type="number" min="0" value="${d.num_responsables}" class="w-16 border rounded text-center p-1 censo-scouters"></td>
+                            ${['celiaco', 'lactosa', 'otros'].map(a => `<td class="p-3 text-center"><input type="number" min="0" value="${(d.alergenos_detalle || {})[a] || 0}" class="w-14 border rounded text-center p-1 censo-alergeno-${a}"></td>`).join('')}
                             <td class="p-3 text-center">
                                 <input type="checkbox" ${estaSalida ? 'checked' : ''} onchange="toggleTomasAusentes(this)" class="w-4 h-4 text-emerald-600 rounded censo-salida">
                             </td>
@@ -915,7 +974,8 @@
                     num_participantes: numPart,
                     num_responsables: numResp,
                     esta_de_salida: estaSalida,
-                    tomas_ausentes: estaSalida ? tomasAusentes : []
+                    tomas_ausentes: estaSalida ? tomasAusentes : [],
+                    alergenos_detalle: { celiaco: parseInt(tr.querySelector('.censo-alergeno-celiaco').value) || 0, lactosa: parseInt(tr.querySelector('.censo-alergeno-lactosa').value) || 0, otros: parseInt(tr.querySelector('.censo-alergeno-otros').value) || 0 }
                 });
             });
 
@@ -957,7 +1017,8 @@
                     num_participantes: numPart,
                     num_responsables: numResp,
                     esta_de_salida: estaSalida,
-                    tomas_ausentes: estaSalida ? tomasAusentes : []
+                    tomas_ausentes: estaSalida ? tomasAusentes : [],
+                    alergenos_detalle: { celiaco: parseInt(tr.querySelector('.censo-alergeno-celiaco').value) || 0, lactosa: parseInt(tr.querySelector('.censo-alergeno-lactosa').value) || 0, otros: parseInt(tr.querySelector('.censo-alergeno-otros').value) || 0 }
                 });
             });
 
@@ -1008,41 +1069,21 @@
                         const infoToma = filaDia.tomas ? filaDia.tomas[toma] : null;
                         html += `<td class="p-2 border align-top bg-white">`;
 
-                        if (infoToma) {
-                            let nombrePlato = "";
-                            let recetaId = null;
-
-                            if (typeof infoToma === 'object') {
-                                nombrePlato = infoToma.plato || infoToma.nombre || "";
-                                recetaId = infoToma.receta_id;
-                            } else if (typeof infoToma === 'string' && infoToma !== '-') {
-                                nombrePlato = infoToma;
+                        if (infoToma && typeof infoToma === 'object') {
+                            const platosList = infoToma.platos || [];
+                            if (infoToma.alertas && infoToma.alertas.length) {
+                                const resumen = infoToma.alertas.map(a => `${nombreAlergeno(a.alergeno)} (${a.cantidad})`).join(', ');
+                                html += `<div class="mb-2 p-2 rounded-lg bg-red-50 border border-red-300 text-red-700 text-[10px] font-bold">⚠️ Falta alternativa: ${resumen}</div>`;
                             }
-
-                            if (nombrePlato && nombrePlato !== '-') {
-                                // Separar múltiples comidas programadas en una misma toma
-                                const platosList = nombrePlato.split(' | ');
-
-                                platosList.forEach(platoItem => {
-                                    const platoTrimmed = platoItem.trim();
-                                    if (!platoTrimmed) return;
-
-                                    const actionClick = (recetaId && platosList.length === 1)
-                                        ? `abrirDetalleRecetaDirecto(${recetaId})`
-                                        : `abrirFichaAlimentoPorNombre('${platoTrimmed.replace(/'/g, "\\'")}')`;
-
-                                    html += `
-                                        <div onclick="${actionClick}"
-                                             title="Haz clic para ver la ficha técnica de la receta"
-                                             class="mb-1 p-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded text-emerald-900 shadow-sm cursor-pointer transition flex items-center justify-between group">
-                                            <span class="font-semibold text-xs">📖 ${platoTrimmed}</span>
-                                            <span class="text-[10px] text-emerald-600 opacity-0 group-hover:opacity-100 font-bold ml-1">🔍</span>
-                                        </div>
-                                    `;
-                                });
-                            } else {
-                                html += `<div onclick="abrirModal('${filaDia.fecha}')" class="p-2 text-center text-slate-300 italic hover:bg-slate-50 cursor-pointer rounded transition">-</div>`;
-                            }
+                            platosList.forEach(plato => {
+                                const clase = plato.es_alternativa ? 'bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-900' : (plato.tiene_alerta ? 'bg-red-50 hover:bg-red-100 border-red-300 text-red-800' : 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-900');
+                                const etiqueta = plato.es_alternativa ? `🔄 ${nombreAlergeno(plato.para_alergeno)}` : (plato.tiene_alerta ? '⚠️' : '📖');
+                                html += `<div onclick="abrirDetalleRecetaDirecto(${plato.receta_id})" title="Haz clic para ver la ficha técnica" class="mb-1 p-2 ${clase} border rounded shadow-sm cursor-pointer transition flex items-center justify-between group">
+                                    <span class="font-semibold text-xs">${etiqueta} ${plato.prefijo ? plato.prefijo + ' ' : ''}${plato.nombre}</span>
+                                    <span class="text-[10px] opacity-0 group-hover:opacity-100 font-bold ml-1">🔍</span>
+                                </div>`;
+                            });
+                            if (!platosList.length && !(infoToma.alertas || []).length) html += `<div onclick="abrirModal('${filaDia.fecha}')" class="p-2 text-center text-slate-300 italic hover:bg-slate-50 cursor-pointer rounded transition">-</div>`;
                         } else {
                             html += `<div onclick="abrirModal('${filaDia.fecha}')" class="p-2 text-center text-slate-300 italic hover:bg-slate-50 cursor-pointer rounded transition">-</div>`;
                         }
@@ -1072,6 +1113,8 @@
             const toma = document.getElementById('menuToma').value;
             const ramaVal = document.getElementById('menuRama').value;
             const nombreReceta = document.getElementById('menuRecetaInput').value.trim();
+            const esAlternativa = document.getElementById('menuEsAlternativa').checked;
+            const paraAlergeno = document.getElementById('menuParaAlergeno').value;
 
             if (!fecha || !nombreReceta) {
                 alert('Por favor selecciona una fecha y busca una receta.');
@@ -1086,12 +1129,9 @@
                 return;
             }
 
-            const payload = {
-                toma: toma,
-                receta_id: recetaObj.id,
-                rama_id: ramaVal ? parseInt(ramaVal) : null,
-                es_picnic: false
-            };
+            if (esAlternativa && !paraAlergeno) { alert('Selecciona para qué alérgeno es la receta alternativa.'); return; }
+
+            const payload = { toma, receta_id: recetaObj.id, rama_id: ramaVal ? parseInt(ramaVal) : null, es_picnic: false, es_alternativa: esAlternativa, para_alergeno: esAlternativa ? paraAlergeno : null };
 
             try {
                 const res = await fetch(`/api/campamentos/${campamentoActualId}/comidas/${fecha}`, {
@@ -1101,6 +1141,8 @@
                 });
                 if (res.ok) {
                     document.getElementById('menuRecetaInput').value = '';
+                    document.getElementById('menuEsAlternativa').checked = false;
+                    toggleSelectorAlergenoMenu();
                     await cargarCuadrante();
                 } else {
                     alert('Error al agendar la comida.');
@@ -1143,7 +1185,7 @@
                     <li class="p-3 flex justify-between items-center hover:bg-slate-50">
                         <div>
                             <span class="font-bold text-slate-800">${i.nombre}</span>
-                            <span class="text-xs text-slate-500 block">Unidad: ${i.unidad_medida} | Coste: ${parseFloat(i.coste_unidad || 0).toFixed(2)}€</span>
+                            <span class="text-xs text-slate-500 block">Unidad: ${i.unidad_medida} | Coste: ${parseFloat(i.coste_unidad || 0).toFixed(2)}€</span><span class="block mt-1">${renderBadges(i.alergenos)}</span>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="editarIngrediente(${i.id})" class="text-xs text-slate-600 hover:text-slate-900 bg-slate-100 p-1.5 rounded">✏️</button>
@@ -1164,7 +1206,11 @@
                 return;
             }
 
-            const payload = { nombre, unidad_medida, coste_unidad };
+            const alergenos = [];
+            if (document.getElementById('ingAlergenoCeliaco').checked) alergenos.push('celiaco');
+            if (document.getElementById('ingAlergenoLactosa').checked) alergenos.push('lactosa');
+            if (document.getElementById('ingAlergenoOtros').checked) alergenos.push('otros');
+            const payload = { nombre, unidad_medida, coste_unidad, alergenos };
 
             try {
                 if (editandoIngredienteId) {
@@ -1195,6 +1241,10 @@
             document.getElementById('ingNombre').value = ing.nombre;
             document.getElementById('ingUnidad').value = ing.unidad_medida;
             document.getElementById('ingCoste').value = ing.coste_unidad;
+            const ingAl = ing.alergenos || [];
+            document.getElementById('ingAlergenoCeliaco').checked = ingAl.includes('celiaco');
+            document.getElementById('ingAlergenoLactosa').checked = ingAl.includes('lactosa');
+            document.getElementById('ingAlergenoOtros').checked = ingAl.includes('otros');
             document.getElementById('btnGuardarIngrediente').innerText = 'Guardar Cambios';
             document.getElementById('btnCancelarIngrediente').classList.remove('hidden');
         }
@@ -1205,6 +1255,9 @@
             document.getElementById('ingNombre').value = '';
             document.getElementById('ingUnidad').value = '';
             document.getElementById('ingCoste').value = '';
+            document.getElementById('ingAlergenoCeliaco').checked = false;
+            document.getElementById('ingAlergenoLactosa').checked = false;
+            document.getElementById('ingAlergenoOtros').checked = false;
             document.getElementById('btnGuardarIngrediente').innerText = '+ Crear Ingrediente';
             document.getElementById('btnCancelarIngrediente').classList.add('hidden');
         }
@@ -1266,6 +1319,7 @@
                             <div class="flex justify-between items-start mb-2">
                                 <h4 class="font-bold text-slate-800 text-base cursor-pointer hover:text-emerald-700" onclick="abrirModalDetalleReceta(${r.id})">${r.nombre}</h4>
                                 <span class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded">${r.porciones_base} raciones</span>
+                                ${r.alergenos && r.alergenos.length ? `<div class="flex flex-wrap gap-1 justify-end mt-1">${renderBadges(r.alergenos)}</div>` : '<span class="text-[10px] text-slate-400">Sin alérgenos</span>'}
                             </div>
                             <p class="text-xs text-slate-500 line-clamp-2">${r.instrucciones || 'Sin instrucciones'}</p>
                         </div>
@@ -1324,6 +1378,10 @@
             const nombre = document.getElementById('recNombre').value.trim();
             const porciones_base = parseInt(document.getElementById('recPorciones').value) || 10;
             const instrucciones = document.getElementById('recInstrucciones').value.trim();
+            const alergenos = [];
+            if (document.getElementById('recAlergenoCeliaco').checked) alergenos.push('celiaco');
+            if (document.getElementById('recAlergenoLactosa').checked) alergenos.push('lactosa');
+            if (document.getElementById('recAlergenoOtros').checked) alergenos.push('otros');
 
             if (!nombre) {
                 alert('El nombre de la receta es obligatorio.');
@@ -1334,6 +1392,7 @@
                 nombre,
                 porciones_base,
                 instrucciones,
+                alergenos,
                 ingredientes: tempIngredientesReceta.map(item => ({
                     ingrediente_id: item.ingrediente_id,
                     cantidad_base: item.cantidad_base
@@ -1370,6 +1429,10 @@
             document.getElementById('recNombre').value = r.nombre;
             document.getElementById('recPorciones').value = r.porciones_base;
             document.getElementById('recInstrucciones').value = r.instrucciones || '';
+            const recAl = r.alergenos || [];
+            document.getElementById('recAlergenoCeliaco').checked = recAl.includes('celiaco');
+            document.getElementById('recAlergenoLactosa').checked = recAl.includes('lactosa');
+            document.getElementById('recAlergenoOtros').checked = recAl.includes('otros');
 
             tempIngredientesReceta = (r.ingredientes || []).map(ing => ({
                 ingrediente_id: ing.ingrediente_id,
@@ -1389,6 +1452,9 @@
             document.getElementById('recNombre').value = '';
             document.getElementById('recPorciones').value = 10;
             document.getElementById('recInstrucciones').value = '';
+            document.getElementById('recAlergenoCeliaco').checked = false;
+            document.getElementById('recAlergenoLactosa').checked = false;
+            document.getElementById('recAlergenoOtros').checked = false;
             tempIngredientesReceta = [];
             renderTempIngredientesReceta();
             document.getElementById('btnGuardarReceta').innerText = 'Guardar Receta';
@@ -1413,13 +1479,14 @@
             }
 
             document.getElementById('detRecetaNombre').innerText = r.nombre;
-            document.getElementById('detRecetaPorciones').innerText = `Raciones Base: ${r.porciones_base}`;
+            document.getElementById('detRecetaPorciones').innerHTML = `Raciones Base: ${r.porciones_base} <span class="ml-2">${renderBadges(r.alergenos)}</span>`;
 
             const ul = document.getElementById('detRecetaIngredientes');
             ul.innerHTML = '';
             if (r.ingredientes && r.ingredientes.length > 0) {
                 r.ingredientes.forEach(ing => {
-                    ul.innerHTML += `<li>• <strong>${ing.ingrediente}</strong>: ${ing.cantidad_base} ${ing.unidad}</li>`;
+                    const badges = renderBadges(ing.alergenos || []);
+                    ul.innerHTML += `<li class="py-1">• <strong>${ing.ingrediente}</strong>: ${ing.cantidad_base} ${ing.unidad}${badges ? `<div class="ml-4 mt-1">${badges}</div>` : ''}</li>`;
                 });
             } else {
                 ul.innerHTML = '<li class="text-slate-400 italic">Sin ingredientes registrados.</li>';
@@ -1489,6 +1556,18 @@
                 alert('❌ Error al conectar con el servidor.');
             }
         }
+
+        const ALERGENOS = { celiaco: '🚫 Celíaco / gluten', lactosa: '🥛 Lactosa', otros: '⚠️ Otros' };
+        function nombreAlergeno(a) { return ALERGENOS[a] || a; }
+        function renderBadges(alergenos) { if (!alergenos || !alergenos.length) return ''; return alergenos.map(a => `<span class="alergeno-badge bg-red-50 text-red-700 border-red-200">${nombreAlergeno(a)}</span>`).join(''); }
+        function toggleSelectorAlergenoMenu() { const activo = document.getElementById('menuEsAlternativa').checked; const sel = document.getElementById('menuParaAlergeno'); sel.disabled = !activo; sel.classList.toggle('opacity-50', !activo); if (!activo) sel.value = ''; }
+        function verificarAlertaAlergenos(fecha, toma, censoDia, comidasToma) {
+            const requeridos = {}; (censoDia || []).forEach(c => { if (!c.tomas_ausentes || !c.tomas_ausentes.includes(toma)) Object.entries(c.alergenos_detalle || {}).forEach(([a, n]) => { if (Number(n) > 0) requeridos[a] = (requeridos[a] || 0) + Number(n); }); });
+            const cubiertos = new Set(); (comidasToma || []).forEach(c => (c.platos || []).forEach(p => { if (p.es_alternativa && p.para_alergeno) cubiertos.add(p.para_alergeno); }));
+            const faltantes = Object.entries(requeridos).filter(([a]) => !cubiertos.has(a)).map(([a, n]) => `${nombreAlergeno(a)} (${n})`);
+            return { requiereAlerta: faltantes.length > 0, faltantes };
+        }
+
     </script>
 </body>
 

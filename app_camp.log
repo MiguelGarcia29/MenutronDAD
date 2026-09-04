@@ -236,3 +236,208 @@ pip install python-multipart
 2026-09-02 14:44:13,141 [INFO] Base de datos inicializada correctamente.
 2026-09-02 15:01:35,586 [INFO] Base de datos inicializada correctamente.
 2026-09-02 15:09:46,087 [INFO] Base de datos inicializada correctamente.
+2026-09-02 15:22:24,164 [INFO] [CampApp] 🛠️  Iniciando verificación y migración de la base de datos...
+2026-09-02 15:22:24,166 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "campamento" ("id" INTEGER NOT NULL PRIMARY KEY, "nombre" VARCHAR(255) NOT NULL, "fecha_inicio" VARCHAR(255) NOT NULL, "fecha_fin" VARCHAR(255) NOT NULL)', [])
+2026-09-02 15:22:24,166 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "rama" ("id" INTEGER NOT NULL PRIMARY KEY, "nombre" VARCHAR(255) NOT NULL)', [])
+2026-09-02 15:22:24,166 [DEBUG] [peewee] ('CREATE UNIQUE INDEX IF NOT EXISTS "rama_nombre" ON "rama" ("nombre")', [])
+2026-09-02 15:22:24,166 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "censodiariorama" ("id" INTEGER NOT NULL PRIMARY KEY, "campamento_id" INTEGER NOT NULL, "fecha" VARCHAR(255) NOT NULL, "rama_id" INTEGER NOT NULL, "num_participantes" INTEGER NOT NULL, "num_responsables" INTEGER NOT NULL, "esta_de_salida" INTEGER NOT NULL, "tomas_ausentes" VARCHAR(255) NOT NULL, FOREIGN KEY ("campamento_id") REFERENCES "campamento" ("id") ON DELETE CASCADE, FOREIGN KEY ("rama_id") REFERENCES "rama" ("id") ON DELETE CASCADE)', [])
+2026-09-02 15:22:24,167 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "censodiariorama_campamento_id" ON "censodiariorama" ("campamento_id")', [])
+2026-09-02 15:22:24,167 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "censodiariorama_rama_id" ON "censodiariorama" ("rama_id")', [])
+2026-09-02 15:22:24,167 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "ingrediente" ("id" INTEGER NOT NULL PRIMARY KEY, "nombre" VARCHAR(255) NOT NULL, "unidad_medida" VARCHAR(255) NOT NULL, "coste_unidad" REAL NOT NULL)', [])
+2026-09-02 15:22:24,167 [DEBUG] [peewee] ('CREATE UNIQUE INDEX IF NOT EXISTS "ingrediente_nombre" ON "ingrediente" ("nombre")', [])
+2026-09-02 15:22:24,167 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "menucomida" ("id" INTEGER NOT NULL PRIMARY KEY, "campamento_id" INTEGER NOT NULL, "fecha" VARCHAR(255) NOT NULL, "toma" VARCHAR(255) NOT NULL, "rama_especifica_id" INTEGER, "es_picnic" INTEGER NOT NULL, FOREIGN KEY ("campamento_id") REFERENCES "campamento" ("id") ON DELETE CASCADE, FOREIGN KEY ("rama_especifica_id") REFERENCES "rama" ("id") ON DELETE SET NULL)', [])
+2026-09-02 15:22:24,167 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "menucomida_campamento_id" ON "menucomida" ("campamento_id")', [])
+2026-09-02 15:22:24,168 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "menucomida_rama_especifica_id" ON "menucomida" ("rama_especifica_id")', [])
+2026-09-02 15:22:24,168 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "receta" ("id" INTEGER NOT NULL PRIMARY KEY, "nombre" VARCHAR(255) NOT NULL, "porciones_base" INTEGER NOT NULL, "instrucciones" TEXT NOT NULL, "es_item_picnic" INTEGER NOT NULL)', [])
+2026-09-02 15:22:24,168 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "menucomidaplato" ("id" INTEGER NOT NULL PRIMARY KEY, "menu_comida_id" INTEGER NOT NULL, "receta_id" INTEGER NOT NULL, FOREIGN KEY ("menu_comida_id") REFERENCES "menucomida" ("id") ON DELETE CASCADE, FOREIGN KEY ("receta_id") REFERENCES "receta" ("id") ON DELETE CASCADE)', [])
+2026-09-02 15:22:24,168 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "menucomidaplato_menu_comida_id" ON "menucomidaplato" ("menu_comida_id")', [])
+2026-09-02 15:22:24,168 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "menucomidaplato_receta_id" ON "menucomidaplato" ("receta_id")', [])
+2026-09-02 15:22:24,168 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "recetaingrediente" ("id" INTEGER NOT NULL PRIMARY KEY, "receta_id" INTEGER NOT NULL, "ingrediente_id" INTEGER NOT NULL, "cantidad_base" REAL NOT NULL, FOREIGN KEY ("receta_id") REFERENCES "receta" ("id") ON DELETE CASCADE, FOREIGN KEY ("ingrediente_id") REFERENCES "ingrediente" ("id") ON DELETE CASCADE)', [])
+2026-09-02 15:22:24,169 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "recetaingrediente_receta_id" ON "recetaingrediente" ("receta_id")', [])
+2026-09-02 15:22:24,169 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "recetaingrediente_ingrediente_id" ON "recetaingrediente" ("ingrediente_id")', [])
+2026-09-02 15:22:24,169 [DEBUG] [peewee] ("ALTER TABLE censodiariorama ADD COLUMN tomas_ausentes VARCHAR DEFAULT '';", None)
+2026-09-02 15:22:24,169 [DEBUG] [peewee] ('ALTER TABLE receta RENAME COLUMN pasos TO instrucciones;', None)
+2026-09-02 15:22:24,169 [DEBUG] [peewee] ('DELETE FROM "rama" WHERE ("rama"."nombre" = ?)', ['Responsables'])
+2026-09-02 15:22:24,170 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Castores', 1, 0])
+2026-09-02 15:22:24,170 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Lobatos', 1, 0])
+2026-09-02 15:22:24,170 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Rangers', 1, 0])
+2026-09-02 15:22:24,170 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Pioneros', 1, 0])
+2026-09-02 15:22:24,171 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Rutas', 1, 0])
+2026-09-02 15:22:24,171 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Apoyo', 1, 0])
+2026-09-02 15:22:24,171 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Cocineros', 1, 0])
+2026-09-02 15:22:24,172 [INFO] [CampApp] ✅ Base de datos inicializada correctamente.
+2026-09-02 15:22:24,222 [INFO] [CampApp] ==================================================
+2026-09-02 15:22:24,222 [INFO] [CampApp]   INICIANDO APLICACIÓN CAMP MENU MANAGER          
+2026-09-02 15:22:24,222 [INFO] [CampApp] ==================================================
+2026-09-02 15:22:24,223 [INFO] [CampApp] 📁 Directorio de ejecucion: C:\Users\migue\Desktop\camp-menu-app
+2026-09-02 15:22:24,223 [INFO] [CampApp] 🗄️  Archivo de SQLite: camp_menu.db
+2026-09-02 15:22:24,224 [INFO] [CampApp] 🚀 Iniciando servidor FastAPI via Uvicorn (http://127.0.0.1:8000)...
+2026-09-02 15:22:24,227 [DEBUG] [asyncio] Using proactor: IocpProactor
+2026-09-02 15:22:25,724 [INFO] [CampApp] 🖥️  Abriendo ventana de interfaz gráfica con PyWebView...
+2026-09-02 15:22:26,542 [INFO] [CampApp] 📥 HTTP IN: GET / (Cliente: 127.0.0.1)
+2026-09-02 15:22:26,545 [INFO] [CampApp] 📤 HTTP OUT: GET / -> Status 404 (⏱️ 2.82ms)
+2026-09-02 15:22:26,566 [INFO] [CampApp] 📥 HTTP IN: GET /favicon.ico (Cliente: 127.0.0.1)
+2026-09-02 15:22:26,569 [INFO] [CampApp] 📤 HTTP OUT: GET /favicon.ico -> Status 404 (⏱️ 2.52ms)
+2026-09-02 15:22:30,290 [INFO] [CampApp] 👋 Aplicación WebView cerrada por el usuario.
+2026-09-02 15:22:44,337 [INFO] Base de datos inicializada correctamente.
+2026-09-02 15:23:06,874 [INFO] Base de datos inicializada correctamente.
+2026-09-02 15:23:22,179 [INFO] [CampApp] 🛠️  Iniciando verificación y migración de la base de datos...
+2026-09-02 15:23:22,181 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "campamento" ("id" INTEGER NOT NULL PRIMARY KEY, "nombre" VARCHAR(255) NOT NULL, "fecha_inicio" VARCHAR(255) NOT NULL, "fecha_fin" VARCHAR(255) NOT NULL)', [])
+2026-09-02 15:23:22,181 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "rama" ("id" INTEGER NOT NULL PRIMARY KEY, "nombre" VARCHAR(255) NOT NULL)', [])
+2026-09-02 15:23:22,182 [DEBUG] [peewee] ('CREATE UNIQUE INDEX IF NOT EXISTS "rama_nombre" ON "rama" ("nombre")', [])
+2026-09-02 15:23:22,182 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "censodiariorama" ("id" INTEGER NOT NULL PRIMARY KEY, "campamento_id" INTEGER NOT NULL, "fecha" VARCHAR(255) NOT NULL, "rama_id" INTEGER NOT NULL, "num_participantes" INTEGER NOT NULL, "num_responsables" INTEGER NOT NULL, "esta_de_salida" INTEGER NOT NULL, "tomas_ausentes" VARCHAR(255) NOT NULL, FOREIGN KEY ("campamento_id") REFERENCES "campamento" ("id") ON DELETE CASCADE, FOREIGN KEY ("rama_id") REFERENCES "rama" ("id") ON DELETE CASCADE)', [])
+2026-09-02 15:23:22,182 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "censodiariorama_campamento_id" ON "censodiariorama" ("campamento_id")', [])
+2026-09-02 15:23:22,182 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "censodiariorama_rama_id" ON "censodiariorama" ("rama_id")', [])
+2026-09-02 15:23:22,182 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "ingrediente" ("id" INTEGER NOT NULL PRIMARY KEY, "nombre" VARCHAR(255) NOT NULL, "unidad_medida" VARCHAR(255) NOT NULL, "coste_unidad" REAL NOT NULL)', [])
+2026-09-02 15:23:22,182 [DEBUG] [peewee] ('CREATE UNIQUE INDEX IF NOT EXISTS "ingrediente_nombre" ON "ingrediente" ("nombre")', [])
+2026-09-02 15:23:22,183 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "menucomida" ("id" INTEGER NOT NULL PRIMARY KEY, "campamento_id" INTEGER NOT NULL, "fecha" VARCHAR(255) NOT NULL, "toma" VARCHAR(255) NOT NULL, "rama_especifica_id" INTEGER, "es_picnic" INTEGER NOT NULL, FOREIGN KEY ("campamento_id") REFERENCES "campamento" ("id") ON DELETE CASCADE, FOREIGN KEY ("rama_especifica_id") REFERENCES "rama" ("id") ON DELETE SET NULL)', [])
+2026-09-02 15:23:22,183 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "menucomida_campamento_id" ON "menucomida" ("campamento_id")', [])
+2026-09-02 15:23:22,183 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "menucomida_rama_especifica_id" ON "menucomida" ("rama_especifica_id")', [])
+2026-09-02 15:23:22,183 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "receta" ("id" INTEGER NOT NULL PRIMARY KEY, "nombre" VARCHAR(255) NOT NULL, "porciones_base" INTEGER NOT NULL, "instrucciones" TEXT NOT NULL, "es_item_picnic" INTEGER NOT NULL)', [])
+2026-09-02 15:23:22,183 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "menucomidaplato" ("id" INTEGER NOT NULL PRIMARY KEY, "menu_comida_id" INTEGER NOT NULL, "receta_id" INTEGER NOT NULL, FOREIGN KEY ("menu_comida_id") REFERENCES "menucomida" ("id") ON DELETE CASCADE, FOREIGN KEY ("receta_id") REFERENCES "receta" ("id") ON DELETE CASCADE)', [])
+2026-09-02 15:23:22,183 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "menucomidaplato_menu_comida_id" ON "menucomidaplato" ("menu_comida_id")', [])
+2026-09-02 15:23:22,183 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "menucomidaplato_receta_id" ON "menucomidaplato" ("receta_id")', [])
+2026-09-02 15:23:22,184 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "recetaingrediente" ("id" INTEGER NOT NULL PRIMARY KEY, "receta_id" INTEGER NOT NULL, "ingrediente_id" INTEGER NOT NULL, "cantidad_base" REAL NOT NULL, FOREIGN KEY ("receta_id") REFERENCES "receta" ("id") ON DELETE CASCADE, FOREIGN KEY ("ingrediente_id") REFERENCES "ingrediente" ("id") ON DELETE CASCADE)', [])
+2026-09-02 15:23:22,184 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "recetaingrediente_receta_id" ON "recetaingrediente" ("receta_id")', [])
+2026-09-02 15:23:22,184 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "recetaingrediente_ingrediente_id" ON "recetaingrediente" ("ingrediente_id")', [])
+2026-09-02 15:23:22,184 [DEBUG] [peewee] ("ALTER TABLE censodiariorama ADD COLUMN tomas_ausentes VARCHAR DEFAULT '';", None)
+2026-09-02 15:23:22,184 [DEBUG] [peewee] ('ALTER TABLE receta RENAME COLUMN pasos TO instrucciones;', None)
+2026-09-02 15:23:22,185 [DEBUG] [peewee] ('DELETE FROM "rama" WHERE ("rama"."nombre" = ?)', ['Responsables'])
+2026-09-02 15:23:22,185 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Castores', 1, 0])
+2026-09-02 15:23:22,185 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Lobatos', 1, 0])
+2026-09-02 15:23:22,185 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Rangers', 1, 0])
+2026-09-02 15:23:22,186 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Pioneros', 1, 0])
+2026-09-02 15:23:22,186 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Rutas', 1, 0])
+2026-09-02 15:23:22,186 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Apoyo', 1, 0])
+2026-09-02 15:23:22,186 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Cocineros', 1, 0])
+2026-09-02 15:23:22,187 [INFO] [CampApp] ✅ Base de datos inicializada correctamente.
+2026-09-02 15:23:22,225 [INFO] [CampApp] ==================================================
+2026-09-02 15:23:22,225 [INFO] [CampApp]   INICIANDO APLICACIÓN CAMP MENU MANAGER          
+2026-09-02 15:23:22,225 [INFO] [CampApp] ==================================================
+2026-09-02 15:23:22,225 [INFO] [CampApp] 📁 Directorio de ejecucion: C:\Users\migue\Desktop\camp-menu-app
+2026-09-02 15:23:22,225 [INFO] [CampApp] 🗄️  Archivo de SQLite: camp_menu.db
+2026-09-02 15:23:22,226 [INFO] [CampApp] 🚀 Iniciando servidor FastAPI via Uvicorn (http://127.0.0.1:8000)...
+2026-09-02 15:23:22,229 [DEBUG] [asyncio] Using proactor: IocpProactor
+2026-09-02 15:23:23,726 [INFO] [CampApp] 🖥️  Abriendo ventana de interfaz gráfica con PyWebView...
+2026-09-02 15:23:24,488 [INFO] [CampApp] 📥 HTTP IN: GET / (Cliente: 127.0.0.1)
+2026-09-02 15:23:24,490 [INFO] [CampApp] 📤 HTTP OUT: GET / -> Status 404 (⏱️ 2.14ms)
+2026-09-02 15:23:24,511 [INFO] [CampApp] 📥 HTTP IN: GET /favicon.ico (Cliente: 127.0.0.1)
+2026-09-02 15:23:24,514 [INFO] [CampApp] 📤 HTTP OUT: GET /favicon.ico -> Status 404 (⏱️ 2.78ms)
+2026-09-02 15:23:29,460 [INFO] [CampApp] 👋 Aplicación WebView cerrada por el usuario.
+2026-09-02 15:23:58,194 [INFO] [CampApp] 🛠️  Iniciando verificación y migración de la base de datos...
+2026-09-02 15:23:58,196 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "campamento" ("id" INTEGER NOT NULL PRIMARY KEY, "nombre" VARCHAR(255) NOT NULL, "fecha_inicio" VARCHAR(255) NOT NULL, "fecha_fin" VARCHAR(255) NOT NULL)', [])
+2026-09-02 15:23:58,196 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "rama" ("id" INTEGER NOT NULL PRIMARY KEY, "nombre" VARCHAR(255) NOT NULL)', [])
+2026-09-02 15:23:58,197 [DEBUG] [peewee] ('CREATE UNIQUE INDEX IF NOT EXISTS "rama_nombre" ON "rama" ("nombre")', [])
+2026-09-02 15:23:58,197 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "censodiariorama" ("id" INTEGER NOT NULL PRIMARY KEY, "campamento_id" INTEGER NOT NULL, "fecha" VARCHAR(255) NOT NULL, "rama_id" INTEGER NOT NULL, "num_participantes" INTEGER NOT NULL, "num_responsables" INTEGER NOT NULL, "esta_de_salida" INTEGER NOT NULL, "tomas_ausentes" VARCHAR(255) NOT NULL, FOREIGN KEY ("campamento_id") REFERENCES "campamento" ("id") ON DELETE CASCADE, FOREIGN KEY ("rama_id") REFERENCES "rama" ("id") ON DELETE CASCADE)', [])
+2026-09-02 15:23:58,198 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "censodiariorama_campamento_id" ON "censodiariorama" ("campamento_id")', [])
+2026-09-02 15:23:58,198 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "censodiariorama_rama_id" ON "censodiariorama" ("rama_id")', [])
+2026-09-02 15:23:58,198 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "ingrediente" ("id" INTEGER NOT NULL PRIMARY KEY, "nombre" VARCHAR(255) NOT NULL, "unidad_medida" VARCHAR(255) NOT NULL, "coste_unidad" REAL NOT NULL)', [])
+2026-09-02 15:23:58,198 [DEBUG] [peewee] ('CREATE UNIQUE INDEX IF NOT EXISTS "ingrediente_nombre" ON "ingrediente" ("nombre")', [])
+2026-09-02 15:23:58,199 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "menucomida" ("id" INTEGER NOT NULL PRIMARY KEY, "campamento_id" INTEGER NOT NULL, "fecha" VARCHAR(255) NOT NULL, "toma" VARCHAR(255) NOT NULL, "rama_especifica_id" INTEGER, "es_picnic" INTEGER NOT NULL, FOREIGN KEY ("campamento_id") REFERENCES "campamento" ("id") ON DELETE CASCADE, FOREIGN KEY ("rama_especifica_id") REFERENCES "rama" ("id") ON DELETE SET NULL)', [])
+2026-09-02 15:23:58,199 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "menucomida_campamento_id" ON "menucomida" ("campamento_id")', [])
+2026-09-02 15:23:58,199 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "menucomida_rama_especifica_id" ON "menucomida" ("rama_especifica_id")', [])
+2026-09-02 15:23:58,199 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "receta" ("id" INTEGER NOT NULL PRIMARY KEY, "nombre" VARCHAR(255) NOT NULL, "porciones_base" INTEGER NOT NULL, "instrucciones" TEXT NOT NULL, "es_item_picnic" INTEGER NOT NULL)', [])
+2026-09-02 15:23:58,200 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "menucomidaplato" ("id" INTEGER NOT NULL PRIMARY KEY, "menu_comida_id" INTEGER NOT NULL, "receta_id" INTEGER NOT NULL, FOREIGN KEY ("menu_comida_id") REFERENCES "menucomida" ("id") ON DELETE CASCADE, FOREIGN KEY ("receta_id") REFERENCES "receta" ("id") ON DELETE CASCADE)', [])
+2026-09-02 15:23:58,200 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "menucomidaplato_menu_comida_id" ON "menucomidaplato" ("menu_comida_id")', [])
+2026-09-02 15:23:58,200 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "menucomidaplato_receta_id" ON "menucomidaplato" ("receta_id")', [])
+2026-09-02 15:23:58,200 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "recetaingrediente" ("id" INTEGER NOT NULL PRIMARY KEY, "receta_id" INTEGER NOT NULL, "ingrediente_id" INTEGER NOT NULL, "cantidad_base" REAL NOT NULL, FOREIGN KEY ("receta_id") REFERENCES "receta" ("id") ON DELETE CASCADE, FOREIGN KEY ("ingrediente_id") REFERENCES "ingrediente" ("id") ON DELETE CASCADE)', [])
+2026-09-02 15:23:58,201 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "recetaingrediente_receta_id" ON "recetaingrediente" ("receta_id")', [])
+2026-09-02 15:23:58,201 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "recetaingrediente_ingrediente_id" ON "recetaingrediente" ("ingrediente_id")', [])
+2026-09-02 15:23:58,201 [DEBUG] [peewee] ("ALTER TABLE censodiariorama ADD COLUMN tomas_ausentes VARCHAR DEFAULT '';", None)
+2026-09-02 15:23:58,201 [DEBUG] [peewee] ('ALTER TABLE receta RENAME COLUMN pasos TO instrucciones;', None)
+2026-09-02 15:23:58,201 [DEBUG] [peewee] ('DELETE FROM "rama" WHERE ("rama"."nombre" = ?)', ['Responsables'])
+2026-09-02 15:23:58,202 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Castores', 1, 0])
+2026-09-02 15:23:58,202 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Lobatos', 1, 0])
+2026-09-02 15:23:58,202 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Rangers', 1, 0])
+2026-09-02 15:23:58,202 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Pioneros', 1, 0])
+2026-09-02 15:23:58,203 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Rutas', 1, 0])
+2026-09-02 15:23:58,203 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Apoyo', 1, 0])
+2026-09-02 15:23:58,203 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Cocineros', 1, 0])
+2026-09-02 15:23:58,204 [INFO] [CampApp] ✅ Base de datos inicializada correctamente.
+2026-09-02 15:23:58,241 [INFO] [CampApp] ==================================================
+2026-09-02 15:23:58,241 [INFO] [CampApp]   INICIANDO APLICACIÓN CAMP MENU MANAGER          
+2026-09-02 15:23:58,241 [INFO] [CampApp] ==================================================
+2026-09-02 15:23:58,241 [INFO] [CampApp] 📁 Directorio de ejecucion: C:\Users\migue\Desktop\camp-menu-app
+2026-09-02 15:23:58,241 [INFO] [CampApp] 🗄️  Archivo de SQLite: camp_menu.db
+2026-09-02 15:23:58,242 [INFO] [CampApp] 🚀 Iniciando servidor FastAPI via Uvicorn (http://127.0.0.1:8000)...
+2026-09-02 15:23:58,245 [DEBUG] [asyncio] Using proactor: IocpProactor
+2026-09-02 15:23:59,742 [INFO] [CampApp] 🖥️  Abriendo ventana de interfaz gráfica con PyWebView...
+2026-09-02 15:24:00,606 [INFO] [CampApp] 📥 HTTP IN: GET / (Cliente: 127.0.0.1)
+2026-09-02 15:24:00,608 [INFO] [CampApp] 📤 HTTP OUT: GET / -> Status 404 (⏱️ 2.32ms)
+2026-09-02 15:24:00,632 [INFO] [CampApp] 📥 HTTP IN: GET /favicon.ico (Cliente: 127.0.0.1)
+2026-09-02 15:24:00,635 [INFO] [CampApp] 📤 HTTP OUT: GET /favicon.ico -> Status 404 (⏱️ 2.37ms)
+2026-09-02 15:24:04,292 [INFO] [CampApp] 👋 Aplicación WebView cerrada por el usuario.
+2026-09-02 15:25:45,083 [INFO] [CampApp] 🛠️  Iniciando verificación y migración de la base de datos...
+2026-09-02 15:25:45,086 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "campamento" ("id" INTEGER NOT NULL PRIMARY KEY, "nombre" VARCHAR(255) NOT NULL, "fecha_inicio" VARCHAR(255) NOT NULL, "fecha_fin" VARCHAR(255) NOT NULL)', [])
+2026-09-02 15:25:45,086 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "rama" ("id" INTEGER NOT NULL PRIMARY KEY, "nombre" VARCHAR(255) NOT NULL)', [])
+2026-09-02 15:25:45,086 [DEBUG] [peewee] ('CREATE UNIQUE INDEX IF NOT EXISTS "rama_nombre" ON "rama" ("nombre")', [])
+2026-09-02 15:25:45,086 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "censodiariorama" ("id" INTEGER NOT NULL PRIMARY KEY, "campamento_id" INTEGER NOT NULL, "fecha" VARCHAR(255) NOT NULL, "rama_id" INTEGER NOT NULL, "num_participantes" INTEGER NOT NULL, "num_responsables" INTEGER NOT NULL, "esta_de_salida" INTEGER NOT NULL, "tomas_ausentes" VARCHAR(255) NOT NULL, FOREIGN KEY ("campamento_id") REFERENCES "campamento" ("id") ON DELETE CASCADE, FOREIGN KEY ("rama_id") REFERENCES "rama" ("id") ON DELETE CASCADE)', [])
+2026-09-02 15:25:45,087 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "censodiariorama_campamento_id" ON "censodiariorama" ("campamento_id")', [])
+2026-09-02 15:25:45,087 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "censodiariorama_rama_id" ON "censodiariorama" ("rama_id")', [])
+2026-09-02 15:25:45,087 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "ingrediente" ("id" INTEGER NOT NULL PRIMARY KEY, "nombre" VARCHAR(255) NOT NULL, "unidad_medida" VARCHAR(255) NOT NULL, "coste_unidad" REAL NOT NULL)', [])
+2026-09-02 15:25:45,087 [DEBUG] [peewee] ('CREATE UNIQUE INDEX IF NOT EXISTS "ingrediente_nombre" ON "ingrediente" ("nombre")', [])
+2026-09-02 15:25:45,087 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "menucomida" ("id" INTEGER NOT NULL PRIMARY KEY, "campamento_id" INTEGER NOT NULL, "fecha" VARCHAR(255) NOT NULL, "toma" VARCHAR(255) NOT NULL, "rama_especifica_id" INTEGER, "es_picnic" INTEGER NOT NULL, FOREIGN KEY ("campamento_id") REFERENCES "campamento" ("id") ON DELETE CASCADE, FOREIGN KEY ("rama_especifica_id") REFERENCES "rama" ("id") ON DELETE SET NULL)', [])
+2026-09-02 15:25:45,087 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "menucomida_campamento_id" ON "menucomida" ("campamento_id")', [])
+2026-09-02 15:25:45,087 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "menucomida_rama_especifica_id" ON "menucomida" ("rama_especifica_id")', [])
+2026-09-02 15:25:45,088 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "receta" ("id" INTEGER NOT NULL PRIMARY KEY, "nombre" VARCHAR(255) NOT NULL, "porciones_base" INTEGER NOT NULL, "instrucciones" TEXT NOT NULL, "es_item_picnic" INTEGER NOT NULL)', [])
+2026-09-02 15:25:45,088 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "menucomidaplato" ("id" INTEGER NOT NULL PRIMARY KEY, "menu_comida_id" INTEGER NOT NULL, "receta_id" INTEGER NOT NULL, FOREIGN KEY ("menu_comida_id") REFERENCES "menucomida" ("id") ON DELETE CASCADE, FOREIGN KEY ("receta_id") REFERENCES "receta" ("id") ON DELETE CASCADE)', [])
+2026-09-02 15:25:45,088 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "menucomidaplato_menu_comida_id" ON "menucomidaplato" ("menu_comida_id")', [])
+2026-09-02 15:25:45,088 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "menucomidaplato_receta_id" ON "menucomidaplato" ("receta_id")', [])
+2026-09-02 15:25:45,088 [DEBUG] [peewee] ('CREATE TABLE IF NOT EXISTS "recetaingrediente" ("id" INTEGER NOT NULL PRIMARY KEY, "receta_id" INTEGER NOT NULL, "ingrediente_id" INTEGER NOT NULL, "cantidad_base" REAL NOT NULL, FOREIGN KEY ("receta_id") REFERENCES "receta" ("id") ON DELETE CASCADE, FOREIGN KEY ("ingrediente_id") REFERENCES "ingrediente" ("id") ON DELETE CASCADE)', [])
+2026-09-02 15:25:45,089 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "recetaingrediente_receta_id" ON "recetaingrediente" ("receta_id")', [])
+2026-09-02 15:25:45,089 [DEBUG] [peewee] ('CREATE INDEX IF NOT EXISTS "recetaingrediente_ingrediente_id" ON "recetaingrediente" ("ingrediente_id")', [])
+2026-09-02 15:25:45,089 [DEBUG] [peewee] ("ALTER TABLE censodiariorama ADD COLUMN tomas_ausentes VARCHAR DEFAULT '';", None)
+2026-09-02 15:25:45,089 [DEBUG] [peewee] ('ALTER TABLE receta RENAME COLUMN pasos TO instrucciones;', None)
+2026-09-02 15:25:45,089 [DEBUG] [peewee] ('DELETE FROM "rama" WHERE ("rama"."nombre" = ?)', ['Responsables'])
+2026-09-02 15:25:45,089 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Castores', 1, 0])
+2026-09-02 15:25:45,090 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Lobatos', 1, 0])
+2026-09-02 15:25:45,090 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Rangers', 1, 0])
+2026-09-02 15:25:45,090 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Pioneros', 1, 0])
+2026-09-02 15:25:45,090 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Rutas', 1, 0])
+2026-09-02 15:25:45,090 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Apoyo', 1, 0])
+2026-09-02 15:25:45,091 [DEBUG] [peewee] ('SELECT "t1"."id", "t1"."nombre" FROM "rama" AS "t1" WHERE ("t1"."nombre" = ?) LIMIT ? OFFSET ?', ['Cocineros', 1, 0])
+2026-09-02 15:25:45,091 [INFO] [CampApp] ✅ Base de datos inicializada correctamente.
+2026-09-02 15:25:45,123 [INFO] [CampApp] ==================================================
+2026-09-02 15:25:45,123 [INFO] [CampApp]   INICIANDO APLICACIÓN CAMP MENU MANAGER          
+2026-09-02 15:25:45,123 [INFO] [CampApp] ==================================================
+2026-09-02 15:25:45,123 [INFO] [CampApp] 📁 Directorio de ejecución: C:\Users\migue\Desktop\camp-menu-app
+2026-09-02 15:25:45,123 [INFO] [CampApp] 🗄️  Archivo de SQLite: camp_menu.db
+2026-09-02 15:25:45,124 [INFO] [CampApp] 🚀 Iniciando servidor FastAPI via Uvicorn (http://127.0.0.1:8000)...
+2026-09-02 15:25:45,127 [DEBUG] [asyncio] Using proactor: IocpProactor
+2026-09-02 15:25:46,625 [INFO] [CampApp] 🖥️  Abriendo ventana de interfaz gráfica con PyWebView...
+2026-09-02 15:25:47,401 [INFO] [CampApp] 📥 HTTP IN: GET / (Cliente: 127.0.0.1)
+2026-09-02 15:25:47,403 [INFO] [CampApp] 📤 HTTP OUT: GET / -> Status 404 (⏱️ 2.03ms)
+2026-09-02 15:25:47,424 [INFO] [CampApp] 📥 HTTP IN: GET /favicon.ico (Cliente: 127.0.0.1)
+2026-09-02 15:25:47,435 [INFO] [CampApp] 📤 HTTP OUT: GET /favicon.ico -> Status 404 (⏱️ 10.97ms)
+2026-09-02 15:25:49,238 [INFO] [CampApp] 👋 Aplicación WebView cerrada por el usuario.
+2026-09-02 15:25:54,578 [INFO] Base de datos inicializada correctamente.
+2026-09-03 13:06:59,709 [INFO] Base de datos inicializada correctamente.
+2026-09-03 13:07:24,938 [INFO] Base de datos inicializada correctamente.
+2026-09-03 13:09:32,455 [INFO] Base de datos inicializada correctamente.
+2026-09-03 13:09:51,981 [INFO] Actualizando receta ID 1
+2026-09-03 13:10:04,948 [INFO] Actualizando receta ID 1
+2026-09-03 13:11:07,147 [INFO] Creando ingrediente: 1232131
+2026-09-03 13:11:14,346 [INFO] Creando receta: 12312312
+2026-09-03 13:13:34,205 [INFO] Base de datos inicializada correctamente.
+2026-09-03 13:13:43,330 [INFO] Creando receta: 12312312
+2026-09-03 13:13:56,352 [INFO] Creando receta: 3232
+2026-09-03 13:14:00,962 [INFO] Eliminando receta ID 7
+2026-09-03 13:14:02,322 [INFO] Eliminando receta ID 6
+2026-09-03 13:14:03,818 [INFO] Eliminando receta ID 8
+2026-09-03 13:15:47,814 [INFO] Base de datos inicializada correctamente.
+2026-09-03 13:15:47,857 [INFO] Base de datos inicializada correctamente.
+2026-09-03 13:15:55,639 [INFO] Base de datos inicializada correctamente.
+2026-09-03 13:19:42,639 [INFO] Base de datos inicializada correctamente.
+2026-09-03 13:19:42,680 [INFO] Base de datos inicializada correctamente.
+2026-09-03 13:19:45,559 [INFO] Base de datos inicializada correctamente.
+2026-09-03 13:20:14,867 [INFO] Creando receta: Leche sola
+2026-09-03 13:20:20,237 [INFO] Eliminando receta ID 22
+2026-09-03 13:20:24,538 [INFO] Creando receta: Leche sola
+2026-09-03 13:20:30,610 [INFO] Actualizando receta ID 22
+2026-09-03 13:20:32,852 [INFO] Eliminando receta ID 22
+2026-09-03 13:22:38,108 [INFO] Base de datos inicializada correctamente.
+2026-09-03 13:24:27,172 [INFO] Base de datos inicializada correctamente.
+2026-09-03 13:26:18,309 [INFO] Base de datos inicializada correctamente.
+2026-09-03 13:26:33,484 [INFO] Base de datos inicializada correctamente.
+2026-09-03 13:28:16,074 [INFO] Base de datos inicializada correctamente.
+2026-09-03 13:28:58,971 [INFO] Creando campamento: 123
