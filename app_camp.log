@@ -441,3 +441,21 @@ pip install python-multipart
 2026-09-03 13:26:33,484 [INFO] Base de datos inicializada correctamente.
 2026-09-03 13:28:16,074 [INFO] Base de datos inicializada correctamente.
 2026-09-03 13:28:58,971 [INFO] Creando campamento: 123
+2026-09-05 16:43:49,487 [INFO] Base de datos inicializada correctamente.
+2026-09-05 16:44:10,478 [ERROR] Error generando PDF de cuadrante: name 'PageBreak' is not defined
+Traceback (most recent call last):
+  File "c:\Users\migue\Desktop\camp-menu-app\backend\main.py", line 876, in pdf_cuadrante
+    elements.append(PageBreak())
+                    ^^^^^^^^^
+NameError: name 'PageBreak' is not defined
+2026-09-05 16:45:11,079 [INFO] Base de datos inicializada correctamente.
+2026-09-05 16:47:27,861 [INFO] Base de datos inicializada correctamente.
+2026-09-05 16:49:13,205 [INFO] Base de datos inicializada correctamente.
+2026-09-05 16:57:17,902 [INFO] Base de datos inicializada correctamente.
+2026-09-05 16:58:45,824 [INFO] Base de datos inicializada correctamente.
+2026-09-05 17:07:08,569 [INFO] Base de datos inicializada correctamente.
+2026-09-05 17:09:15,480 [INFO] Base de datos inicializada correctamente.
+2026-09-05 17:09:51,848 [INFO] Creando receta: 123232131
+2026-09-05 17:17:16,304 [INFO] Base de datos inicializada correctamente.
+2026-09-05 17:19:43,634 [INFO] Base de datos inicializada correctamente.
+2026-09-05 17:19:55,753 [INFO] Base de datos inicializada correctamente.

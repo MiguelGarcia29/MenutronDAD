@@ -17,7 +17,7 @@ from peewee import (
 )
 
 from reportlab.lib.pagesizes import A4, landscape
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 
@@ -388,12 +388,44 @@ def get_dias_campamento(camp_id: int):
     camp = Campamento.get_by_id(camp_id)
     return generar_fechas_campamento(camp.fecha_inicio, camp.fecha_fin)
 
+import json
+
+def obtener_tomas_ausentes(censo):
+    valor = censo.tomas_ausentes
+
+    if not valor:
+        return []
+
+    # Ya es una lista
+    if isinstance(valor, list):
+        return valor
+
+    valor = str(valor).strip()
+
+    # Caso JSON: ["Comida", "Almuerzo"]
+    if valor.startswith("["):
+        try:
+            resultado = json.loads(valor)
+            if isinstance(resultado, list):
+                return [str(t).strip() for t in resultado if str(t).strip()]
+        except json.JSONDecodeError:
+            pass
+
+    # Caso texto: Comida,Almuerzo
+    return [
+        t.strip()
+        for t in valor.split(",")
+        if t.strip()
+    ]
+
 @app.get("/api/campamentos/{camp_id}/censo/{fecha}")
 def get_censo(camp_id: int, fecha: str):
+
     censos = CensoDiarioRama.select().where(
-        (CensoDiarioRama.campamento_id == camp_id) & 
+        (CensoDiarioRama.campamento_id == camp_id) &
         (CensoDiarioRama.fecha == str(fecha))
     )
+
     return [
         {
             "id": c.id,
@@ -403,12 +435,11 @@ def get_censo(camp_id: int, fecha: str):
             "num_participantes": c.num_participantes,
             "num_responsables": c.num_responsables,
             "esta_de_salida": c.esta_de_salida,
-            "tomas_ausentes": [t.strip() for t in (c.tomas_ausentes or "").split(",") if t.strip()],
+            "tomas_ausentes": obtener_tomas_ausentes(c),
             "alergenos_detalle": obtener_alergenos_censo(c)
         }
         for c in censos
     ]
-
 @app.post("/api/campamentos/{camp_id}/copiar-censo-todos")
 def copiar_censo_todos(camp_id: int, datos: List[CensoItem]):
     try:
@@ -801,6 +832,75 @@ def pdf_lista_compra(camp_id: int):
         logger.error(f"Error generando PDF de lista de compra: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
+def obtener_esta_de_salida(c) -> bool:
+    """Evalúa si el censo tiene la marca 'esta_de_salida' activa."""
+    val = getattr(c, 'esta_de_salida', getattr(c, 'de_salida', getattr(c, 'es_salida', False)))
+    if isinstance(val, bool):
+        return val
+    if isinstance(val, (int, float)):
+        return val != 0
+    if isinstance(val, str):
+        return val.strip().lower() in ['true', '1', 'si', 'sí', 't', 'yes']
+    return False
+
+def parsear_tomas_ausentes(val) -> list:
+    """Parsea tomas ausentes soportando arrays JSON ('["Almuerzo", "Comida"]') o texto ('Desayuno')."""
+    if not val:
+        return []
+    if isinstance(val, list):
+        return [str(x).strip() for x in val if str(x).strip()]
+    if isinstance(val, str):
+        val_str = val.strip()
+        if not val_str or val_str in ["[]", '""']:
+            return []
+        try:
+            parsed = json.loads(val_str)
+            if isinstance(parsed, list):
+                return [str(x).strip() for x in parsed if str(x).strip()]
+            elif isinstance(parsed, str):
+                return [x.strip() for x in parsed.split(',') if x.strip()]
+        except Exception:
+            return [x.strip().strip('[]"\'') for x in val_str.split(',') if x.strip()]
+    return []
+
+def esta_ausente_en_toma(c, toma: str) -> bool:
+    """Comprueba si una rama está ausente en una toma de comida específica."""
+    if not obtener_esta_de_salida(c):
+        return False
+    ausentes = parsear_tomas_ausentes(getattr(c, 'tomas_ausentes', None))
+    return toma.strip().lower() in [x.lower() for x in ausentes]
+
+def obtener_nombre_rama(c) -> str:
+    """Obtiene el nombre de la rama desde 'rama_nombre' o la relación 'rama'."""
+    if hasattr(c, 'rama_nombre') and getattr(c, 'rama_nombre'):
+        return str(getattr(c, 'rama_nombre'))
+    if hasattr(c, 'rama') and getattr(c, 'rama'):
+        r = getattr(c, 'rama')
+        return r.nombre if hasattr(r, 'nombre') else str(r)
+    return "Rama"
+
+def formatear_alergenos_detalle(c) -> str:
+    """Transforma el diccionario alergenos_detalle ({'celiaco': 1, 'lactosa': 2}) a texto."""
+    detalle = getattr(c, 'alergenos_detalle', None)
+    if not detalle:
+        detalle = getattr(c, 'alergias_info', getattr(c, 'alergias', None))
+    
+    if isinstance(detalle, str):
+        try:
+            detalle = json.loads(detalle)
+        except Exception:
+            return detalle if detalle.strip() else "-"
+            
+    if isinstance(detalle, dict):
+        items = []
+        for key, count in detalle.items():
+            if isinstance(count, (int, float)) and count > 0:
+                nombre_k = str(key).capitalize()
+                items.append(f"{nombre_k}: {count}")
+        return ", ".join(items) if items else "-"
+        
+    return "-"
+
 @app.get("/api/campamentos/{camp_id}/pdf/cuadrante")
 def pdf_cuadrante(camp_id: int):
     try:
@@ -820,17 +920,176 @@ def pdf_cuadrante(camp_id: int):
         elements = []
         styles = getSampleStyleSheet()
 
+        style_title = styles['Title']
         style_subtitle = ParagraphStyle('Subtitle', parent=styles['Normal'], fontSize=11, leading=14, alignment=1, textColor=colors.HexColor('#4B5563'))
         style_header = ParagraphStyle('Header', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=9, textColor=colors.whitesmoke, alignment=1)
         style_cell = ParagraphStyle('Cell', parent=styles['Normal'], fontSize=8, leading=10, alignment=0)
+        style_cell_center = ParagraphStyle('CellCenter', parent=styles['Normal'], fontSize=8, leading=10, alignment=1)
         style_fecha = ParagraphStyle('Fecha', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=8, alignment=1)
 
-        elements.append(Paragraph(f"<b>Cuadrante General de Menús para Cocina</b>", styles['Title']))
+        # =========================================================================
+        # PÁGINA 1: CUADRANTE GENERAL DE MENÚS CON RAMAS AUSENTES
+        # =========================================================================
+        elements.append(Paragraph("<b>Cuadrante General de Menús para Cocina</b>", style_title))
         elements.append(Paragraph(f"Campamento: {camp.nombre} ({camp.fecha_inicio} al {camp.fecha_fin})", style_subtitle))
         elements.append(Spacer(1, 15))
 
-        headers = [Paragraph("Fecha", style_header)] + [Paragraph(t, style_header) for t in tomas]
-        data_tabla = [headers]
+        headers_cuadrante = [Paragraph("Fecha", style_header)] + [Paragraph(t, style_header) for t in tomas]
+        data_cuadrante = [headers_cuadrante]
+
+        for f in fechas:
+            fila = [Paragraph(str(f), style_fecha)]
+            censos_dia = list(CensoDiarioRama.select().where((CensoDiarioRama.campamento_id == camp_id) & (CensoDiarioRama.fecha == str(f))))
+            
+            for t in tomas:
+                comidas = MenuComida.select().where((MenuComida.campamento_id == camp_id) & (MenuComida.fecha == str(f)) & (MenuComida.toma == t))
+                platos = []
+                for c in comidas:
+                    prefix = f"<b>[{c.rama_especifica.nombre}]</b> " if c.rama_especifica else ""
+                    for p in c.platos:
+                        platos.append(f"{prefix}{p.receta.nombre}")
+                
+                # Identificar correctamente qué ramas están fuera en esta toma
+                ausentes = [obtener_nombre_rama(c) for c in censos_dia if esta_ausente_en_toma(c, t)]
+                txt_ausentes = f"<br/><font color='#DC2626'><i>Fuera: {', '.join(ausentes)}</i></font>" if ausentes else ""
+
+                texto_celda = ("<br/>".join(platos) if platos else "-") + txt_ausentes
+                fila.append(Paragraph(texto_celda, style_cell))
+            
+            data_cuadrante.append(fila)
+
+        t_cuadrante = Table(data_cuadrante, colWidths=[70, 146, 146, 146, 146, 146])
+        t_cuadrante.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#1E293B')),
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#94A3B8')),
+            ('TOPPADDING', (0,0), (-1,-1), 5),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ]))
+        elements.append(t_cuadrante)
+
+        # =========================================================================
+        # SALTO DE PÁGINA
+        # =========================================================================
+        elements.append(PageBreak())
+
+        # =========================================================================
+        # PÁGINA 2: DESGLOSE DETALLADO DE CENSO, EXCURSIONES Y ALÉRGENOS
+        # =========================================================================
+        elements.append(Paragraph("<b>Desglose Diario de Censo, Excursiones y Alérgenos</b>", style_title))
+        elements.append(Paragraph(f"Campamento: {camp.nombre}", style_subtitle))
+        elements.append(Spacer(1, 15))
+
+        headers_censo = [
+            Paragraph("Fecha", style_header),
+            Paragraph("Rama", style_header),
+            Paragraph("Part.", style_header),
+            Paragraph("Resp.", style_header),
+            Paragraph("Total", style_header),
+            Paragraph("Salida", style_header),
+            Paragraph("Tomas Ausentes", style_header),
+            Paragraph("Alérgenos / Necesidades Especiales", style_header)
+        ]
+        data_censo = [headers_censo]
+
+        for f in fechas:
+            censos_dia = list(CensoDiarioRama.select().where((CensoDiarioRama.campamento_id == camp_id) & (CensoDiarioRama.fecha == str(f))))
+            
+            if not censos_dia:
+                data_censo.append([
+                    Paragraph(f"<b>{f}</b>", style_cell_center),
+                    Paragraph("<i>Sin censo registrado</i>", style_cell),
+                    Paragraph("-", style_cell_center),
+                    Paragraph("-", style_cell_center),
+                    Paragraph("-", style_cell_center),
+                    Paragraph("-", style_cell_center),
+                    Paragraph("-", style_cell),
+                    Paragraph("-", style_cell)
+                ])
+                continue
+
+            for idx, c in enumerate(censos_dia):
+                part = getattr(c, 'num_participantes', 0) or 0
+                resp = getattr(c, 'num_responsables', 0) or 0
+                total_rama = int(part) + int(resp)
+                
+                es_salida = obtener_esta_de_salida(c)
+                txt_salida = "<font color='#DC2626'><b>SÍ</b></font>" if es_salida else "No"
+                
+                list_ausentes = parsear_tomas_ausentes(getattr(c, 'tomas_ausentes', None))
+                txt_tomas_aus = ", ".join(list_ausentes) if (es_salida and list_ausentes) else "-"
+                
+                txt_alergias = formatear_alergenos_detalle(c)
+                txt_alergias_fmt = f"<font color='#B45309'><b>{txt_alergias}</b></font>" if txt_alergias != "-" else "-"
+
+                rama_nombre = obtener_nombre_rama(c)
+
+                data_censo.append([
+                    Paragraph(f"<b>{f}</b>" if idx == 0 else "", style_cell_center),
+                    Paragraph(f"<b>{rama_nombre}</b>", style_cell),
+                    Paragraph(str(part), style_cell_center),
+                    Paragraph(str(resp), style_cell_center),
+                    Paragraph(f"<b>{total_rama}</b>", style_cell_center),
+                    Paragraph(txt_salida, style_cell_center),
+                    Paragraph(txt_tomas_aus, style_cell),
+                    Paragraph(txt_alergias_fmt, style_cell)
+                ])
+
+        t_censo = Table(data_censo, colWidths=[65, 85, 45, 45, 45, 45, 160, 312])
+        t_censo.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#047857')),
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#94A3B8')),
+            ('TOPPADDING', (0,0), (-1,-1), 4),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+        ]))
+        elements.append(t_censo)
+
+        doc.build(elements)
+        buffer.seek(0)
+        return StreamingResponse(
+            buffer, 
+            media_type="application/pdf", 
+            headers={"Content-Disposition": f'attachment; filename="Cuadrante_Cocina_{camp_id}.pdf"'}
+        )
+    except Exception as e:
+        logger.error(f"Error generando PDF de cuadrante: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+    try:
+        camp = Campamento.get_by_id(camp_id)
+        fechas = generar_fechas_campamento(camp.fecha_inicio, camp.fecha_fin)
+        tomas = ["Desayuno", "Almuerzo", "Comida", "Merienda", "Cena"]
+
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(
+            buffer, 
+            pagesize=landscape(A4), 
+            rightMargin=20, 
+            leftMargin=20, 
+            topMargin=20, 
+            bottomMargin=20
+        )
+        elements = []
+        styles = getSampleStyleSheet()
+
+        style_title = styles['Title']
+        style_subtitle = ParagraphStyle('Subtitle', parent=styles['Normal'], fontSize=11, leading=14, alignment=1, textColor=colors.HexColor('#4B5563'))
+        style_header = ParagraphStyle('Header', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=9, textColor=colors.whitesmoke, alignment=1)
+        style_cell = ParagraphStyle('Cell', parent=styles['Normal'], fontSize=8, leading=10, alignment=0)
+        style_cell_center = ParagraphStyle('CellCenter', parent=styles['Normal'], fontSize=8, leading=10, alignment=1)
+        style_fecha = ParagraphStyle('Fecha', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=8, alignment=1)
+
+        # =========================================================================
+        # PÁGINA 1: CUADRANTE GENERAL DE MENÚS (INTACTO)
+        # =========================================================================
+        elements.append(Paragraph("<b>Cuadrante General de Menús para Cocina</b>", style_title))
+        elements.append(Paragraph(f"Campamento: {camp.nombre} ({camp.fecha_inicio} al {camp.fecha_fin})", style_subtitle))
+        elements.append(Spacer(1, 15))
+
+        headers_cuadrante = [Paragraph("Fecha", style_header)] + [Paragraph(t, style_header) for t in tomas]
+        data_cuadrante = [headers_cuadrante]
 
         for f in fechas:
             fila = [Paragraph(f, style_fecha)]
@@ -849,12 +1108,13 @@ def pdf_cuadrante(camp_id: int):
 
                 texto_celda = ("<br/>".join(platos) if platos else "-") + txt_ausentes
                 fila.append(Paragraph(texto_celda, style_cell))
-            data_tabla.append(fila)
+            
+            data_cuadrante.append(fila)
 
-        col_widths = [70, 146, 146, 146, 146, 146]
+        col_widths_cuadrante = [70, 146, 146, 146, 146, 146]
 
-        t = Table(data_tabla, colWidths=col_widths)
-        t.setStyle(TableStyle([
+        t_cuadrante = Table(data_cuadrante, colWidths=col_widths_cuadrante)
+        t_cuadrante.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#1E293B')),
             ('ALIGN', (0,0), (-1,-1), 'CENTER'),
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
@@ -862,7 +1122,89 @@ def pdf_cuadrante(camp_id: int):
             ('TOPPADDING', (0,0), (-1,-1), 5),
             ('BOTTOMPADDING', (0,0), (-1,-1), 5),
         ]))
-        elements.append(t)
+        elements.append(t_cuadrante)
+
+        # =========================================================================
+        # SALTO DE PÁGINA
+        # =========================================================================
+        elements.append(PageBreak())
+
+        # =========================================================================
+        # PÁGINA 2: TABLA DETALLADA DE CENSO, EXCURSIONES Y ALÉRGENOS
+        # =========================================================================
+        elements.append(Paragraph("<b>Desglose Diario de Censo, Excursiones y Alérgenos</b>", style_title))
+        elements.append(Paragraph(f"Campamento: {camp.nombre}", style_subtitle))
+        elements.append(Spacer(1, 15))
+
+        headers_censo = [
+            Paragraph("Fecha", style_header),
+            Paragraph("Rama", style_header),
+            Paragraph("Part.", style_header),
+            Paragraph("Resp.", style_header),
+            Paragraph("Total", style_header),
+            Paragraph("Salida", style_header),
+            Paragraph("Tomas Ausentes", style_header),
+            Paragraph("Alérgenos / Necesidades Especiales", style_header)
+        ]
+        data_censo = [headers_censo]
+
+        for f in fechas:
+            censos_dia = list(CensoDiarioRama.select().where((CensoDiarioRama.campamento_id == camp_id) & (CensoDiarioRama.fecha == f)))
+            
+            if not censos_dia:
+                data_censo.append([
+                    Paragraph(f"<b>{f}</b>", style_cell_center),
+                    Paragraph("<i>Sin censo registrado</i>", style_cell),
+                    Paragraph("-", style_cell_center),
+                    Paragraph("-", style_cell_center),
+                    Paragraph("-", style_cell_center),
+                    Paragraph("-", style_cell_center),
+                    Paragraph("-", style_cell),
+                    Paragraph("-", style_cell)
+                ])
+                continue
+
+            for idx, c in enumerate(censos_dia):
+                part = getattr(c, 'num_participantes', getattr(c, 'participantes', 0)) or 0
+                resp = getattr(c, 'num_responsables', getattr(c, 'responsables', 0)) or 0
+                total_rama = part + resp
+                
+                es_salida = getattr(c, 'de_salida', getattr(c, 'es_salida', False))
+                txt_salida = "<font color='#DC2626'><b>SÍ</b></font>" if es_salida else "No"
+                
+                tomas_aus = (c.tomas_ausentes or "-") if es_salida else "-"
+                
+                # Obtener detalles de alérgenos/dietas especiales guardados en la rama/censo
+                info_alergias = getattr(c, 'alergias_info', getattr(c, 'alergias', getattr(c, 'observaciones_alergias', '-'))) or "-"
+                txt_alergias = f"<font color='#B45309'><b>{info_alergias}</b></font>" if info_alergias != "-" else "-"
+
+                rama_nombre = c.rama.nombre if hasattr(c, 'rama') and c.rama else "Rama"
+
+                data_censo.append([
+                    Paragraph(f"<b>{f}</b>" if idx == 0 else "", style_cell_center), # Muestra la fecha solo en la primera rama del día
+                    Paragraph(f"<b>{rama_nombre}</b>", style_cell),
+                    Paragraph(str(part), style_cell_center),
+                    Paragraph(str(resp), style_cell_center),
+                    Paragraph(f"<b>{total_rama}</b>", style_cell_center),
+                    Paragraph(txt_salida, style_cell_center),
+                    Paragraph(tomas_aus, style_cell),
+                    Paragraph(txt_alergias, style_cell)
+                ])
+
+        # Anchos de columna optimizados para A4 Apagado / Horizontal (802pt)
+        col_widths_censo = [65, 90, 45, 45, 45, 50, 150, 312]
+
+        t_censo = Table(data_censo, colWidths=col_widths_censo)
+        t_censo.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#047857')), # Encabezado verde para diferenciarlo
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#94A3B8')),
+            ('TOPPADDING', (0,0), (-1,-1), 4),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+        ]))
+        elements.append(t_censo)
+
         doc.build(elements)
         buffer.seek(0)
         return StreamingResponse(
@@ -874,7 +1216,438 @@ def pdf_cuadrante(camp_id: int):
         logger.error(f"Error generando PDF de cuadrante: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
-# EXPORTAR E IMPORTAR BASE DE DATOS
+
+@app.get("/api/campamentos/{camp_id}/pdf/recetario")
+def pdf_recetario(camp_id: int):
+    try:
+        # ---------------------------------------------------------
+        # 1. Obtener campamento
+        # ---------------------------------------------------------
+        camp = Campamento.get_by_id(camp_id)
+
+        # ---------------------------------------------------------
+        # 2. Obtener comidas del campamento
+        # ---------------------------------------------------------
+        comidas = MenuComida.select().where(
+            MenuComida.campamento_id == camp_id
+        )
+
+        # ---------------------------------------------------------
+        # 3. Extraer recetas únicas asignadas al campamento
+        # ---------------------------------------------------------
+        recetas_map = {}
+
+        for c in comidas:
+            for p in getattr(c, 'platos', []):
+                receta = getattr(p, 'receta', None)
+
+                if receta:
+                    recetas_map[receta.id] = receta
+
+        recetas = list(recetas_map.values())
+
+        if not recetas:
+            raise HTTPException(
+                status_code=404,
+                detail="No hay recetas registradas para este campamento"
+            )
+
+        # ---------------------------------------------------------
+        # 4. Crear PDF
+        # ---------------------------------------------------------
+        buffer = BytesIO()
+
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=A4,
+            rightMargin=35,
+            leftMargin=35,
+            topMargin=35,
+            bottomMargin=35
+        )
+
+        elements = []
+
+        # ---------------------------------------------------------
+        # 5. Estilos
+        # ---------------------------------------------------------
+        styles = getSampleStyleSheet()
+
+        style_title = ParagraphStyle(
+            'RecetaTitle',
+            parent=styles['Title'],
+            fontSize=20,
+            leading=24,
+            textColor=colors.HexColor('#0F172A'),
+            alignment=0
+        )
+
+        style_subtitle = ParagraphStyle(
+            'RecetaSub',
+            parent=styles['Normal'],
+            fontSize=10,
+            leading=13,
+            textColor=colors.HexColor('#64748B')
+        )
+
+        style_h2 = ParagraphStyle(
+            'SectionHeader',
+            parent=styles['Heading2'],
+            fontSize=12,
+            leading=16,
+            textColor=colors.HexColor('#047857'),
+            spaceBefore=12,
+            spaceAfter=6
+        )
+
+        style_body = ParagraphStyle(
+            'RecetaBody',
+            parent=styles['Normal'],
+            fontSize=9,
+            leading=14
+        )
+
+        style_ing_header = ParagraphStyle(
+            'IngHeader',
+            parent=styles['Normal'],
+            fontName='Helvetica-Bold',
+            fontSize=9,
+            textColor=colors.whitesmoke
+        )
+
+        # ---------------------------------------------------------
+        # 6. Generar una página por receta
+        # ---------------------------------------------------------
+        total_recetas = len(recetas)
+
+        for idx, receta in enumerate(recetas):
+
+            # -----------------------------------------------------
+            # ENCABEZADO DE LA RECETA
+            # -----------------------------------------------------
+            nombre_receta = getattr(
+                receta,
+                'nombre',
+                'Receta sin nombre'
+            )
+
+            elements.append(
+                Paragraph(
+                    f"<b>{nombre_receta}</b>",
+                    style_title
+                )
+            )
+
+            elements.append(
+                Paragraph(
+                    f"Campamento: {camp.nombre} | Recetario de Cocina",
+                    style_subtitle
+                )
+            )
+
+            elements.append(Spacer(1, 12))
+
+            # -----------------------------------------------------
+            # INGREDIENTES Y CANTIDADES
+            # -----------------------------------------------------
+            elements.append(
+                Paragraph(
+                    "<b>Ingredientes y Cantidades</b>",
+                    style_h2
+                )
+            )
+
+            ingredientes_data = [
+                [
+                    Paragraph("Ingrediente", style_ing_header),
+                    Paragraph("Cantidad Necesaria", style_ing_header)
+                ]
+            ]
+
+            # IMPORTANTE:
+            # La relación correcta es receta.ingredientes_rel
+            #
+            # rel.ingrediente.nombre
+            # rel.cantidad_base
+            #
+            # No usamos:
+            # receta.ingredientes
+            # ing.cantidad
+            # -----------------------------------------------------
+
+            ing_list = getattr(
+                receta,
+                'ingredientes_rel',
+                []
+            )
+
+            if ing_list:
+
+                for rel in ing_list:
+
+                    # ---------------------------------------------
+                    # Ingrediente relacionado
+                    # ---------------------------------------------
+                    ingrediente = getattr(
+                        rel,
+                        'ingrediente',
+                        None
+                    )
+
+                    if ingrediente:
+
+                        nombre_ing = getattr(
+                            ingrediente,
+                            'nombre',
+                            'Ingrediente sin nombre'
+                        )
+
+                        # La cantidad está en la relación
+                        cant_ing = getattr(
+                            rel,
+                            'cantidad_base',
+                            None
+                        )
+
+                        # La unidad pertenece al ingrediente
+                        unidad = getattr(
+                            ingrediente,
+                            'unidad',
+                            ''
+                        )
+
+                    else:
+                        nombre_ing = "Ingrediente sin nombre"
+                        cant_ing = getattr(
+                            rel,
+                            'cantidad_base',
+                            None
+                        )
+                        unidad = ''
+
+                    # ---------------------------------------------
+                    # Formatear cantidad
+                    # ---------------------------------------------
+                    if cant_ing is None:
+                        cantidad_texto = "-"
+                    else:
+                        cantidad_texto = str(cant_ing)
+
+                    # Evitar cosas como 2.0 cuando sea posible
+                    try:
+                        numero = float(cant_ing)
+
+                        if numero.is_integer():
+                            cantidad_texto = str(int(numero))
+                        else:
+                            cantidad_texto = str(numero)
+
+                    except (TypeError, ValueError):
+                        pass
+
+                    # ---------------------------------------------
+                    # Añadir unidad
+                    # ---------------------------------------------
+                    if unidad:
+                        cantidad_texto = (
+                            f"{cantidad_texto} {unidad}"
+                        )
+
+                    # ---------------------------------------------
+                    # Añadir fila
+                    # ---------------------------------------------
+                    ingredientes_data.append(
+                        [
+                            Paragraph(
+                                str(nombre_ing),
+                                style_body
+                            ),
+                            Paragraph(
+                                cantidad_texto,
+                                style_body
+                            )
+                        ]
+                    )
+
+            else:
+
+                ingredientes_data.append(
+                    [
+                        Paragraph(
+                            "No especificados",
+                            style_body
+                        ),
+                        Paragraph(
+                            "-",
+                            style_body
+                        )
+                    ]
+                )
+
+            # -----------------------------------------------------
+            # TABLA DE INGREDIENTES
+            # -----------------------------------------------------
+
+            # A4 vertical con márgenes:
+            # 595 - 35 - 35 = 525 pt
+            t_ing = Table(
+                ingredientes_data,
+                colWidths=[345, 180],
+                repeatRows=1
+            )
+
+            t_ing.setStyle(
+                TableStyle(
+                    [
+                        (
+                            'BACKGROUND',
+                            (0, 0),
+                            (-1, 0),
+                            colors.HexColor('#047857')
+                        ),
+                        (
+                            'GRID',
+                            (0, 0),
+                            (-1, -1),
+                            0.5,
+                            colors.HexColor('#CBD5E1')
+                        ),
+                        (
+                            'VALIGN',
+                            (0, 0),
+                            (-1, -1),
+                            'MIDDLE'
+                        ),
+                        (
+                            'TOPPADDING',
+                            (0, 0),
+                            (-1, -1),
+                            5
+                        ),
+                        (
+                            'BOTTOMPADDING',
+                            (0, 0),
+                            (-1, -1),
+                            5
+                        ),
+                    ]
+                )
+            )
+
+            elements.append(t_ing)
+            elements.append(Spacer(1, 10))
+
+            # -----------------------------------------------------
+            # PASOS DE PREPARACIÓN
+            # -----------------------------------------------------
+            elements.append(
+                Paragraph(
+                    "<b>Pasos de Preparación</b>",
+                    style_h2
+                )
+            )
+
+            pasos_raw = getattr(
+                receta,
+                'instrucciones',
+                ''
+            )
+
+            # -----------------------------------------------------
+            # Instrucciones como texto
+            # -----------------------------------------------------
+            if isinstance(pasos_raw, str) and pasos_raw.strip():
+
+                lineas = [
+                    p.strip()
+                    for p in pasos_raw.split('\n')
+                    if p.strip()
+                ]
+
+                for num, paso in enumerate(lineas, 1):
+
+                    elements.append(
+                        Paragraph(
+                            f"<b>{num}.</b> {paso}",
+                            style_body
+                        )
+                    )
+
+                    elements.append(
+                        Spacer(1, 4)
+                    )
+
+            # -----------------------------------------------------
+            # Instrucciones como lista
+            # -----------------------------------------------------
+            elif isinstance(pasos_raw, list) and pasos_raw:
+
+                for num, paso in enumerate(pasos_raw, 1):
+
+                    elements.append(
+                        Paragraph(
+                            f"<b>{num}.</b> {paso}",
+                            style_body
+                        )
+                    )
+
+                    elements.append(
+                        Spacer(1, 4)
+                    )
+
+            # -----------------------------------------------------
+            # Sin instrucciones
+            # -----------------------------------------------------
+            else:
+
+                elements.append(
+                    Paragraph(
+                        "<i>Sin instrucciones de preparación registradas.</i>",
+                        style_body
+                    )
+                )
+
+            # -----------------------------------------------------
+            # Salto de página entre recetas
+            # -----------------------------------------------------
+            if idx < total_recetas - 1:
+                elements.append(PageBreak())
+
+        # ---------------------------------------------------------
+        # 7. Generar PDF
+        # ---------------------------------------------------------
+        doc.build(elements)
+
+        buffer.seek(0)
+
+        # ---------------------------------------------------------
+        # 8. Devolver PDF
+        # ---------------------------------------------------------
+        return StreamingResponse(
+            buffer,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition":
+                    f'attachment; filename="Recetario_Campamento_{camp_id}.pdf"'
+            }
+        )
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+
+        logger.error(
+            f"Error generando el recetario: {e}",
+            exc_info=True
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al generar el recetario PDF: {str(e)}"
+        )
+
+
 
 @app.get("/api/database/export")
 def export_database():
@@ -1113,5 +1886,5 @@ def start_backend():
 
 if __name__ == "__main__":
     threading.Thread(target=start_backend, daemon=True).start()
-    webview.create_window("Gestor de Menús para Campamentos", "http://127.0.0.1:8000/", width=1300, height=850)
+    webview.create_window("MenutronDAD - Por favor reportarme todo lo que necesiteis, bug, mejoras, etc. - MiguelDAD", "http://127.0.0.1:8000/", width=1300, height=850)
     webview.start()

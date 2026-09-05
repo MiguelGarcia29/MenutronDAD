@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor de Menús para Campamentos</title>
+    <title>MenutronDAD - Por favor reportarme todo lo que necesiteis, bug, mejoras, etc. - MiguelDAD</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -179,9 +179,14 @@
                             receta.</p>
                     </div>
                     <div class="flex gap-3">
+                        <button onclick="descargarPDF('recetario')"
+                            class="bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow">📖
+                            Exportar PDF Recetario</button>
+
                         <button onclick="descargarPDF('cuadrante')"
                             class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow">📄
                             Exportar PDF Cuadrante</button>
+
                         <button onclick="descargarPDF('lista-compra')"
                             class="bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow">🛒
                             Exportar PDF Lista Compra</button>
@@ -514,7 +519,7 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        const TOMAS = ["Desayuno",  "Comida", "Almuerzo", "Merienda", "Cena"];
+        const TOMAS = ["Desayuno", "Comida", "Almuerzo", "Merienda", "Cena"];
 
         let campamentos = [];
         let ingredientes = [];

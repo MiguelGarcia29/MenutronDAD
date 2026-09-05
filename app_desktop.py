@@ -56,12 +56,12 @@ if __name__ == "__main__":
         import webview
         
         webview.create_window(
-            title="Gestor de Menús y Cocina",
+            title="MenutronDAD - Por favor reportarme todo lo que necesiteis, bug, mejoras, etc. - MiguelDAD",
             url=url,
             width=1280,
             height=800,
             resizable=True,
-            fullscreen=True
+            maximized=True
         )
         
         # Si esto lanza un RuntimeError (error de .NET/DLL), saltará al except

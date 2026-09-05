@@ -1,0 +1,22 @@
+  ¡INSTALACIÓN DE MENUTRONDAD COMPLETADA CON ÉXITO!
+===============================================================================
+
+MenutronDAD v1.3.0 se ha instalado correctamente en su equipo.
+
+NOTAS IMPORTANTES Y RECOMENDACIONES DE USO:
+-------------------------------------------------------------------------------
+1. Acceso a la Aplicación:
+   Si seleccionó la opción correspondiente, encontrará un acceso directo
+   en el Escritorio y en el Menú Inicio con el nombre "MenutronDAD".
+
+2. Estructura de Archivos Integradora:
+   La aplicación utiliza la subcarpeta interna "_internal" para sus librerías
+   y dependencias principales. Para garantizar el correcto funcionamiento del
+   programa, no modifique ni elimine el contenido de dicha carpeta.
+
+3. Soporte, Novedades y Reporte de Errores:
+   Para consultar el código fuente, recibir asistencia o descargar futuras
+   actualizaciones, visite el repositorio oficial:
+   https://github.com/MiguelGarcia29
+
+¡Gracias por instalar MenutronDAD!

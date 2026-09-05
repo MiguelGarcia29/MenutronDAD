@@ -1,0 +1,25 @@
+===============================================================================
+  BIENVENIDO A LA INSTALACIÓN DE MENUTRONDAD v1.3.0
+  Gestor de Menús para Campamentos
+===============================================================================
+
+Muchas gracias por elegir MenutronDAD. Este asistente le guiará a través
+del proceso de instalación de la aplicación en su sistema.
+
+REQUISITOS PREVIOS Y RECOMENDACIONES:
+-------------------------------------------------------------------------------
+1. Arquitectura del Sistema: Compatible con Windows 10 y Windows 11 (64 bits).
+2. Se recomienda cerrar cualquier versión anterior de MenutronDAD antes de
+   continuar con la instalación para evitar conflictos de archivos.
+3. Asegúrese de contar con espacio suficiente en disco y los permisos
+   necesarios para instalar aplicaciones en la carpeta seleccionada.
+4. Mantenga el asistente activo durante la copia de archivos.
+
+INFORMACIÓN SOBRE LA APLICACIÓN:
+-------------------------------------------------------------------------------
+* Aplicación: MenutronDAD
+* Versión: 1.3.0
+* Desarrollador / Editor: MiguelDAD
+* Proyecto y Soporte: https://github.com/MiguelGarcia29
+
+Haga clic en "Siguiente" para elegir la carpeta de destino y continuar.

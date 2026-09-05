@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MenutronDAD - Por favor reportarme todo lo que necesiteis, bug, mejoras, etc. - MiguelDAD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .tab-btn.active {
+            border-bottom: 3px solid #059669;
+            color: #059669;
+            font-weight: bold;
+        }
+
+        .alergeno-badge {
+            display: inline-flex;
+            align-items: center;
+            font-size: .65rem;
+            font-weight: 700;
+            padding: .15rem .4rem;
+            border-radius: 9999px;
+            border: 1px solid;
+            margin: .1rem;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800">
+
+    <div class="max-w-7xl mx-auto p-4 sm:p-6">
+
+        <!-- ENCABEZADO -->
+        <header class="bg-white shadow-md rounded-xl p-5 mb-6 flex justify-between items-center flex-wrap gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-emerald-800">⛺ Gestor de Menús y Cocina</h1>
+                <p class="text-sm text-slate-500">Planificación de censos, cuadrantes y listas de compra por días</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="exportarBaseDatos()" title="Exportar la base de datos completa a un archivo JSON"
+                    class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-2 rounded-lg font-medium flex items-center gap-1">
+                    📥 Exportar
+                </button>
+                <button onclick="abrirModalImportar()" title="Importar datos a la aplicación"
+                    class="bg-purple-600 hover:bg-purple-700 text-white text-sm px-3 py-2 rounded-lg font-medium flex items-center gap-1">
+                    📤 Importar
+                </button>
+                <select id="selectCampamento" onchange="cambiarCampamentoDesdeSelect()"
+                    class="border border-slate-300 rounded-lg p-2 text-sm bg-slate-50 font-semibold focus:ring-2 focus:ring-emerald-500">
+                    <option value="">-- Selecciona un Campamento --</option>
+                </select>
+                <button onclick="abrirModalCampamento()"
+                    class="bg-emerald-700 hover:bg-emerald-800 text-white text-sm px-3 py-2 rounded-lg font-medium">+
+                    Nuevo</button>
+            </div>
+        </header>
+
+        <!-- NAVEGACIÓN -->
+        <nav class="flex overflow-x-auto border-b border-slate-300 mb-6 bg-white rounded-t-xl px-4">
+            <button onclick="switchTab('tab-campamentos')" id="btn-tab-campamentos"
+                class="tab-btn active py-3 px-5 text-slate-600 hover:text-emerald-700 whitespace-nowrap">⛺
+                Campamentos</button>
+            <button onclick="switchTab('tab-censo')" id="btn-tab-censo"
+                class="tab-btn py-3 px-5 text-slate-600 hover:text-emerald-700 whitespace-nowrap">📋 Censo
+                Diario</button>
+            <button onclick="switchTab('tab-cuadrante')" id="btn-tab-cuadrante"
+                class="tab-btn py-3 px-5 text-slate-600 hover:text-emerald-700 whitespace-nowrap">🗓️ Cuadrante y
+                Menús</button>
+            <button onclick="switchTab('tab-ingredientes')" id="btn-tab-ingredientes"
+                class="tab-btn py-3 px-5 text-slate-600 hover:text-emerald-700 whitespace-nowrap">🥦
+                Ingredientes</button>
+            <button onclick="switchTab('tab-recetas')" id="btn-tab-recetas"
+                class="tab-btn py-3 px-5 text-slate-600 hover:text-emerald-700 whitespace-nowrap">📖 Recetas</button>
+            <button onclick="switchTab('tab-info')" id="btn-tab-info"
+                class="tab-btn py-3 px-5 text-slate-600 hover:text-emerald-700 whitespace-nowrap ml-auto">ℹ️
+                Información</button>
+        </nav>
+
+        <!-- PESTAÑA 0: CAMPAMENTOS -->
+        <section id="tab-campamentos" class="tab-content bg-white p-6 rounded-xl shadow-sm">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-700">Selección y Buscador de Campamentos</h2>
+                    <p class="text-sm text-slate-500">Elige un campamento para comenzar a gestionar el censo y los
+                        menús.</p>
+                </div>
+                <button onclick="abrirModalCampamento()"
+                    class="bg-emerald-700 hover:bg-emerald-800 text-white font-medium px-4 py-2 rounded-lg text-sm shadow">+
+                    Crear Campamento</button>
+            </div>
+
+            <div class="mb-6">
+                <input type="text" id="searchCampamento" oninput="renderCampamentos()"
+                    placeholder="🔍 Buscar campamento por nombre..."
+                    class="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-slate-50 focus:ring-2 focus:ring-emerald-500">
+            </div>
+
+            <div id="gridCampamentos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </section>
+
+        <!-- PESTAÑA 1: CENSO DIARIO -->
+        <section id="tab-censo" class="tab-content hidden bg-white p-6 rounded-xl shadow-sm">
+            <div id="censoNoCamp"
+                class="text-center py-12 bg-slate-50 border border-dashed border-slate-300 rounded-xl">
+                <p class="text-4xl mb-2">⛺</p>
+                <h3 class="text-lg font-bold text-slate-700">Ningún campamento seleccionado</h3>
+                <p class="text-sm text-slate-500 mb-4">Selecciona uno en el buscador para ver y modificar el censo
+                    diario.</p>
+                <button onclick="switchTab('tab-campamentos')"
+                    class="bg-emerald-700 text-white text-sm px-4 py-2 rounded-lg font-medium">Ir a Buscar
+                    Campamentos</button>
+            </div>
+
+            <div id="censoContenido" class="hidden">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-700">Censo de Participantes y Excursiones</h2>
+                        <p class="text-sm text-slate-500">Marca las ramas de salida para habilitar la selección de tomas
+                            ausentes.</p>
+                    </div>
+                    <div class="flex gap-3 items-center">
+                        <label class="text-sm font-semibold">Día:</label>
+                        <select id="selectFechaCenso" onchange="cargarCensoDia()"
+                            class="border border-slate-300 rounded-lg p-2 text-sm bg-slate-50"></select>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse border border-slate-200">
+                        <thead>
+                            <tr class="bg-slate-800 text-white text-sm">
+                                <th class="p-3">Rama</th>
+                                <th class="p-3 text-center">Participantes</th>
+                                <th class="p-3 text-center">Responsables</th>
+                                <th class="p-3 text-center">🚫 Celíaco</th>
+                                <th class="p-3 text-center">🥛 Lactosa</th>
+                                <th class="p-3 text-center">⚠️ Otros</th>
+                                <th class="p-3 text-center">¿De Salida?</th>
+                                <th class="p-3">Tomas Ausentes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyCenso" class="divide-y divide-slate-200 text-sm"></tbody>
+                    </table>
+                </div>
+
+                <div class="mt-6 flex flex-wrap gap-4 justify-end">
+                    <button onclick="guardarCensoDia()"
+                        class="bg-emerald-700 hover:bg-emerald-800 text-white font-medium px-5 py-2.5 rounded-lg shadow">💾
+                        Guardar Censo de Este Día</button>
+                    <button onclick="copiarCensoTodosLosDias()"
+                        class="bg-slate-700 hover:bg-slate-800 text-white font-medium px-5 py-2.5 rounded-lg shadow">👯
+                        Copiar Censo a Todos los Días</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PESTAÑA 2: CUADRANTE Y MENÚS -->
+        <section id="tab-cuadrante" class="tab-content hidden bg-white p-6 rounded-xl shadow-sm">
+            <div id="cuadranteNoCamp"
+                class="text-center py-12 bg-slate-50 border border-dashed border-slate-300 rounded-xl">
+                <p class="text-4xl mb-2">🗓️</p>
+                <h3 class="text-lg font-bold text-slate-700">Ningún campamento seleccionado</h3>
+                <p class="text-sm text-slate-500 mb-4">Selecciona un campamento para acceder a la planificación de
+                    menús.</p>
+                <button onclick="switchTab('tab-campamentos')"
+                    class="bg-emerald-700 text-white text-sm px-4 py-2 rounded-lg font-medium">Ir a Buscar
+                    Campamentos</button>
+            </div>
+
+            <div id="cuadranteContenido" class="hidden">
+                <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-700">Planificación de Menús</h2>
+                        <p class="text-sm text-slate-500">Haz clic en cualquier plato para abrir su ficha técnica de
+                            receta.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="descargarPDF('recetario')"
+                            class="bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow">📖
+                            Exportar PDF Recetario</button>
+
+                        <button onclick="descargarPDF('cuadrante')"
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow">📄
+                            Exportar PDF Cuadrante</button>
+
+                        <button onclick="descargarPDF('lista-compra')"
+                            class="bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow">🛒
+                            Exportar PDF Lista Compra</button>
+                    </div>
+                </div>
+
+                <div
+                    class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6 grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Día</label>
+                        <select id="menuFecha"
+                            class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Toma</label>
+                        <select id="menuToma" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
+                            <option value="Desayuno">Desayuno</option>
+                            <option value="Comida">Comida</option>
+                            <option value="Almuerzo">Almuerzo</option>
+                            <option value="Merienda">Merienda</option>
+                            <option value="Cena">Cena</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Destino</label>
+                        <select id="menuRama" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
+                            <option value="">Todo el Campamento</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Buscar Receta</label>
+                        <!-- BUSCADOR CON TECLADO PARA RECETAS -->
+                        <input type="text" id="menuRecetaInput" list="menuRecetaList" placeholder="🔍 Buscar receta..."
+                            class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-emerald-500">
+                        <datalist id="menuRecetaList"></datalist>
+                    </div>
+                    <div class="md:col-span-2 flex flex-wrap items-center gap-3">
+                        <label class="inline-flex items-center gap-2 text-xs font-semibold cursor-pointer">
+                            <input type="checkbox" id="menuEsAlternativa" onchange="toggleSelectorAlergenoMenu()"
+                                class="w-4 h-4 text-emerald-600 rounded">
+                            Es menú alternativo
+                        </label>
+                        <select id="menuParaAlergeno" disabled
+                            class="border border-slate-300 rounded-lg p-2 text-xs bg-white opacity-50">
+                            <option value="">Alternativa para...</option>
+                            <option value="celiaco">🚫 Celíaco / gluten</option>
+                            <option value="lactosa">🥛 Lactosa</option>
+                            <option value="otros">⚠️ Otros</option>
+                        </select>
+                    </div>
+                    <button onclick="agendarComida()"
+                        class="bg-emerald-700 hover:bg-emerald-800 text-white font-medium p-2 rounded-lg text-sm shadow">+
+                        Añadir Plato</button>
+                </div>
+
+                <h3 class="font-bold text-slate-700 mb-3">Vista Previa del Cuadrante</h3>
+                <div id="contenedorCuadrante" class="overflow-x-auto border border-slate-200 rounded-xl"></div>
+            </div>
+        </section>
+
+        <!-- PESTAÑA 3: INGREDIENTES -->
+        <section id="tab-ingredientes" class="tab-content hidden bg-white p-6 rounded-xl shadow-sm">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="md:col-span-1">
+                    <h3 id="tituloFormIngrediente" class="text-lg font-bold text-slate-700 mb-4">Añadir Ingrediente</h3>
+                    <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre</label>
+                            <input type="text" id="ingNombre" placeholder="ej. Lentejas"
+                                class="w-full border p-2 text-sm rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Unidad de Medida</label>
+                            <input type="text" id="ingUnidad" placeholder="kg, lit, ud, paquete..."
+                                class="w-full border p-2 text-sm rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Coste por Unidad (€)</label>
+                            <input type="number" step="0.01" id="ingCoste" placeholder="0.00"
+                                class="w-full border p-2 text-sm rounded-lg">
+                        </div>
+                        <div class="border-t border-slate-200 pt-3">
+                            <label class="block text-xs font-semibold text-slate-600 mb-2">Alérgenos /
+                                intolerancias</label>
+                            <div class="grid grid-cols-3 gap-2 text-xs"><label class="flex items-center gap-1"><input
+                                        type="checkbox" id="ingAlergenoCeliaco"> Celíaco</label><label
+                                    class="flex items-center gap-1"><input type="checkbox" id="ingAlergenoLactosa">
+                                    Lactosa</label><label class="flex items-center gap-1"><input type="checkbox"
+                                        id="ingAlergenoOtros"> Otros</label></div>
+                        </div>
+                        <div class="flex gap-2 pt-2">
+                            <button onclick="guardarIngrediente()" id="btnGuardarIngrediente"
+                                class="w-full bg-slate-800 hover:bg-slate-900 text-white text-sm py-2 rounded-lg font-semibold">+
+                                Crear Ingrediente</button>
+                            <button onclick="cancelarEdicionIngrediente()" id="btnCancelarIngrediente"
+                                class="hidden bg-slate-300 text-slate-700 text-sm px-3 py-2 rounded-lg font-semibold">X</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md:col-span-2">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-slate-700">Base de Datos de Ingredientes</h3>
+                        <span id="cantIngredientes"
+                            class="text-xs bg-slate-100 border px-2.5 py-1 rounded-full font-semibold text-slate-600">0
+                            ítems</span>
+                    </div>
+
+                    <input type="text" id="searchIngrediente" oninput="renderIngredientes()"
+                        placeholder="🔍 Buscar ingrediente..."
+                        class="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-slate-50 mb-4 focus:ring-2 focus:ring-emerald-500">
+
+                    <div class="border border-slate-200 rounded-xl overflow-hidden max-h-96 overflow-y-auto">
+                        <ul id="listaIngredientes" class="divide-y divide-slate-200 text-sm"></ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PESTAÑA 4: RECETAS -->
+        <section id="tab-recetas" class="tab-content hidden bg-white p-6 rounded-xl shadow-sm">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="md:col-span-1">
+                    <h3 id="tituloFormReceta" class="text-lg font-bold text-slate-700 mb-4">Crear Receta</h3>
+                    <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre de la Receta</label>
+                            <input type="text" id="recNombre" placeholder="ej. Macarrones con Tomate"
+                                class="w-full border p-2 text-sm rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Raciones Base</label>
+                            <input type="number" id="recPorciones" value="10" placeholder="Raciones base"
+                                class="w-full border p-2 text-sm rounded-lg">
+                        </div>
+
+                        <div class="border-t border-slate-200 pt-3 space-y-2">
+                            <p class="text-xs font-semibold text-slate-500">Ingredientes de la Receta:</p>
+                            <div class="flex gap-2">
+                                <select id="recSelectIng" class="w-2/3 border p-2 text-xs rounded-lg"></select>
+                                <input type="number" step="0.01" id="recCantIng" placeholder="Cant."
+                                    class="w-1/3 border p-2 text-xs rounded-lg">
+                                <button onclick="agregarIngredienteARecetaTemp()"
+                                    class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg text-xs font-bold">+</button>
+                            </div>
+                            <ul id="listaTempIngReceta"
+                                class="text-xs space-y-1 bg-white p-2 border rounded-lg max-h-36 overflow-y-auto"></ul>
+                        </div>
+
+                        <div class="border-t border-slate-200 pt-3">
+                            <label class="block text-xs font-semibold text-slate-600 mb-2">Alérgenos / intolerancias de
+                                la receta</label>
+                            <div class="grid grid-cols-3 gap-2 text-xs"><label class="flex items-center gap-1"><input
+                                        type="checkbox" id="recAlergenoCeliaco"> 🚫 Celíaco</label><label
+                                    class="flex items-center gap-1"><input type="checkbox" id="recAlergenoLactosa"> 🥛
+                                    Lactosa</label><label class="flex items-center gap-1"><input type="checkbox"
+                                        id="recAlergenoOtros"> ⚠️ Otros</label></div>
+                            <p class="text-[10px] text-slate-400 mt-1">También se tendrán en cuenta los alérgenos
+                                marcados en sus ingredientes.</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Pasos / Instrucciones de
+                                Preparación</label>
+                            <textarea id="recInstrucciones" rows="4" placeholder="Escribe los pasos..."
+                                class="w-full border p-2 text-sm rounded-lg resize-y"></textarea>
+                        </div>
+
+                        <div class="flex gap-2 pt-2">
+                            <button onclick="guardarReceta()" id="btnGuardarReceta"
+                                class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-sm py-2 rounded-lg font-semibold">Guardar
+                                Receta</button>
+                            <button onclick="cancelarEdicionReceta()" id="btnCancelarReceta"
+                                class="hidden bg-slate-300 text-slate-700 text-sm px-3 py-2 rounded-lg font-semibold">X</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md:col-span-2">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-slate-700">Recetario</h3>
+                        <span id="cantRecetas"
+                            class="text-xs bg-slate-100 border px-2.5 py-1 rounded-full font-semibold text-slate-600">0
+                            recetas</span>
+                    </div>
+
+                    <input type="text" id="searchReceta" oninput="renderRecetas()" placeholder="🔍 Buscar receta..."
+                        class="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-slate-50 mb-4 focus:ring-2 focus:ring-emerald-500">
+
+                    <div id="gridRecetas" class="grid grid-cols-1 gap-4 max-h-[500px] overflow-y-auto pr-1"></div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- PESTAÑA 5: INFORMACIÓN -->
+    <section id="tab-info" class="tab-content hidden bg-white p-6 rounded-xl shadow-sm">
+        <!-- Aquí se inyectará el contenido de info.html -->
+        <div id="contenidoInfo" class="space-y-4">
+            <p class="text-slate-400 text-center py-8 text-sm">Cargando información...</p>
+        </div>
+    </section>
+
+    <!-- MODAL CAMPAMENTO -->
+    <div id="modalCampamento" class="fixed inset-0 bg-black/50 hidden flex justify-center items-center p-4 z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md space-y-4">
+            <h3 id="tituloModalCampamento" class="text-lg font-bold text-slate-800">Nuevo Campamento</h3>
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre</label>
+                <input type="text" id="campNombre" placeholder="Nombre del campamento"
+                    class="w-full border p-2 text-sm rounded-lg">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="text-xs font-semibold text-slate-600">Fecha Inicio</label>
+                    <input type="date" id="campInicio" class="w-full border p-2 text-sm rounded-lg">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-600">Fecha Fin</label>
+                    <input type="date" id="campFin" class="w-full border p-2 text-sm rounded-lg">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="cerrarModalCampamento()" class="px-4 py-2 border text-sm rounded-lg">Cancelar</button>
+                <button onclick="guardarCampamentoModal()"
+                    class="px-4 py-2 bg-emerald-700 text-white text-sm rounded-lg font-semibold">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETALLE RECETA -->
+    <div id="modalRecetaDetalle" class="fixed inset-0 bg-black/50 hidden flex justify-center items-center p-4 z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-lg space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start border-b border-slate-200 pb-3">
+                <div>
+                    <h3 id="detRecetaNombre" class="text-xl font-bold text-emerald-800"></h3>
+                    <p id="detRecetaPorciones" class="text-xs font-semibold text-slate-500 mt-0.5"></p>
+                </div>
+                <button onclick="cerrarModalDetalleReceta()"
+                    class="text-slate-400 hover:text-slate-600 font-bold text-xl leading-none">&times;</button>
+            </div>
+
+            <div>
+                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">🥦 Ingredientes (Raciones
+                    Base)</h4>
+                <ul id="detRecetaIngredientes"
+                    class="text-sm space-y-1.5 bg-slate-50 p-3 rounded-lg border border-slate-200"></ul>
+            </div>
+
+            <div>
+                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">📝 Pasos y Preparación</h4>
+                <div id="detRecetaInstrucciones"
+                    class="text-sm text-slate-700 bg-slate-50 p-3 rounded-lg border border-slate-200 whitespace-pre-line leading-relaxed">
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-2 border-t border-slate-100">
+                <button onclick="cerrarModalDetalleReceta()"
+                    class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-sm rounded-lg font-semibold">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PREVISUALIZACIÓN DE COMIDAS DE UN DÍA -->
+    <div id="modal-comidas" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 id="modal-fecha-titulo" class="text-lg font-bold text-slate-800">Comidas del día</h3>
+                <button onclick="cerrarModal()"
+                    class="text-slate-400 hover:text-slate-600 font-bold text-xl">&times;</button>
+            </div>
+
+            <div id="lista-comidas-dia" class="max-h-80 overflow-y-auto mb-4 pr-1"></div>
+
+            <div class="flex justify-end pt-3 border-t border-slate-100">
+                <button onclick="cerrarModal()"
+                    class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg text-sm font-semibold">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL IMPORTAR BASE DE DATOS -->
+    <div id="modalImportar" class="fixed inset-0 bg-black/50 hidden flex justify-center items-center p-4 z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md space-y-4 shadow-xl">
+            <h3 class="text-lg font-bold text-slate-800">📤 Importar Datos</h3>
+            <p class="text-xs text-slate-500">Selecciona el archivo JSON de copia de seguridad previamente exportado.
+            </p>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Archivo de Copia (.json)</label>
+                <input type="file" id="archivoImportar" accept=".json"
+                    class="w-full border p-2 text-sm rounded-lg bg-slate-50">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Modo de Importación</label>
+                <div class="space-y-2 mt-1">
+                    <label
+                        class="flex items-start gap-2 cursor-pointer text-sm bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                        <input type="radio" name="modoImportar" value="append" checked class="mt-1">
+                        <div>
+                            <span class="font-semibold text-slate-700">Añadir a los datos existentes</span>
+                            <p class="text-xs text-slate-500">Conserva tus datos actuales y añade o actualiza las
+                                recetas, ingredientes y campamentos del archivo.</p>
+                        </div>
+                    </label>
+                    <label
+                        class="flex items-start gap-2 cursor-pointer text-sm bg-red-50/50 p-2.5 rounded-lg border border-red-200">
+                        <input type="radio" name="modoImportar" value="overwrite" class="mt-1 text-red-600">
+                        <div>
+                            <span class="font-semibold text-red-700">Sobreescribir base de datos</span>
+                            <p class="text-xs text-slate-500">Borra por completo todos los datos actuales y los
+                                reemplaza con el archivo.</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                <button onclick="cerrarModalImportar()" class="px-4 py-2 border text-sm rounded-lg">Cancelar</button>
+                <button onclick="ejecutarImportacion()"
+                    class="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white text-sm rounded-lg font-semibold">Procesar
+                    Importación</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        const TOMAS = ["Desayuno", "Comida", "Almuerzo", "Merienda", "Cena"];
+
+        let campamentos = [];
+        let ingredientes = [];
+        let recetas = [];
+        let ramas = [];
+
+        let campamentoActualId = null;
+        let fechaSeleccionada = null;
+        let tempIngredientesReceta = [];
+
+        let editandoIngredienteId = null;
+        let editandoRecetaId = null;
+        let editandoCampamentoId = null;
+
+        window.addEventListener('DOMContentLoaded', init);
+
+        async function init() {
+            await cargarRamas();
+            await cargarIngredientes();
+            await cargarRecetas();
+            await cargarCampamentos();
+        }
+
+        /* --- COMIDAS DEL DÍA Y DETALLE DE RECETA --- */
+        function abrirModal(fecha) {
+            if (!campamentoActualId) {
+                alert("Por favor, selecciona un campamento primero.");
+                return;
+            }
+            document.getElementById("modal-comidas").classList.remove("hidden");
+            verComidasDelDia(fecha);
+        }
+
+        function cerrarModal() {
+            document.getElementById("modal-comidas").classList.add("hidden");
+        }
+
+        async function verComidasDelDia(fecha) {
+            fechaSeleccionada = fecha;
+            document.getElementById("modal-fecha-titulo").innerText = `Comidas del día ${fecha}`;
+
+            const contenedor = document.getElementById("lista-comidas-dia");
+            contenedor.innerHTML = "<p class='text-slate-500 italic text-center py-4'>Cargando comidas...</p>";
+
+            try {
+                const response = await fetch(`/api/campamentos/${campamentoActualId}/comidas_dia/${fecha}`);
+                if (!response.ok) throw new Error("Error en la petición API");
+                const comidas = await response.json();
+
+                contenedor.innerHTML = "";
+
+                if (!comidas || comidas.length === 0) {
+                    contenedor.innerHTML = "<p class='text-slate-500 italic text-center py-4'>No hay comidas agendadas para este día.</p>";
+                    return;
+                }
+
+                comidas.forEach(item => {
+                    const div = document.createElement("div");
+                    div.className = "flex items-center justify-between p-3 my-2 bg-slate-50 rounded-lg border border-slate-200 shadow-sm hover:bg-slate-100 transition";
+
+                    const platoTexto = item.plato || "";
+                    const actionClick = `abrirFichaAlimentoPorNombre('${platoTexto.replace(/'/g, "\\'")}')`;
+
+                    const platosHtml = (item.platos || []).map(plato => {
+                        const badges = renderBadges(plato.alergenos || []);
+                        const alternativa = plato.es_alternativa && plato.para_alergeno
+                            ? `<span class="ml-1 text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full font-bold">🔄 Alternativa ${nombreAlergeno(plato.para_alergeno)}</span>`
+                            : '';
+                        return `<div class="mb-1"><span class="font-semibold text-slate-800">📖 ${plato.nombre}</span>${alternativa}${badges ? `<div class="mt-1">${badges}</div>` : ''}</div>`;
+                    }).join('');
+
+                    div.innerHTML = `
+                        <div class="cursor-pointer flex-1 mr-2" onclick="${actionClick}">
+                            <div><span class="font-bold text-emerald-700">[${item.toma}]</span></div>
+                            ${platosHtml || `<span class="font-semibold text-slate-800">📖 ${platoTexto}</span>`}
+                            <span class="text-xs text-slate-500 block mt-1">Destino: ${item.destino} • <span class="text-emerald-600 font-medium">Ver Ficha Receta 🔍</span></span>
+                        </div>
+                        <button onclick="eliminarComida(${item.id})" 
+                                class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold rounded-lg transition shadow-sm">
+                            🗑️ Eliminar
+                        </button>
+                    `;
+                    contenedor.appendChild(div);
+                });
+            } catch (error) {
+                console.error("Error al cargar comidas:", error);
+                contenedor.innerHTML = "<p class='text-slate-500 text-center py-4 text-xs'>No se pudieron obtener comidas desde la API.</p>";
+            }
+        }
+
+        function abrirDetalleRecetaDirecto(recetaId) {
+            if (!recetaId) {
+                alert("No hay información de la receta disponible.");
+                return;
+            }
+            abrirModalDetalleReceta(recetaId);
+        }
+
+        // Abre la receta buscando por nombre limpìando corchetes y coincidencias parciales
+        function abrirFichaAlimentoPorNombre(nombre) {
+            if (!nombre || nombre === '-') return;
+
+            // Eliminar etiquetas entre corchetes como [Castores] o [Picnic]
+            let nombreLimpio = nombre.replace(/\[.*?\]/g, '').trim();
+
+            // 1. Intentar coincidencia exacta
+            let rec = recetas.find(r => r.nombre.toLowerCase().trim() === nombreLimpio.toLowerCase());
+
+            // 2. Si vienen varios platos separados por comas, barras o barras verticales
+            if (!rec && (nombreLimpio.includes(',') || nombreLimpio.includes('|') || nombreLimpio.includes('/'))) {
+                const subNombres = nombreLimpio.split(/[,|/]/).map(s => s.trim()).filter(Boolean);
+                for (const sub of subNombres) {
+                    rec = recetas.find(r => r.nombre.toLowerCase().trim() === sub.toLowerCase());
+                    if (rec) break;
+                }
+            }
+
+            // 3. Coincidencia parcial si aún no se encuentra
+            if (!rec) {
+                rec = recetas.find(r =>
+                    nombreLimpio.toLowerCase().includes(r.nombre.toLowerCase().trim()) ||
+                    r.nombre.toLowerCase().trim().includes(nombreLimpio.toLowerCase())
+                );
+            }
+
+            if (rec) {
+                abrirModalDetalleReceta(rec.id);
+            } else {
+                alert(`No se encontró la ficha técnica para la receta: "${nombreLimpio}"`);
+            }
+        }
+
+        async function eliminarComida(comidaId) {
+            if (!confirm("¿Estás seguro de que deseas eliminar esta comida del cuadrante?")) return;
+
+            try {
+                const response = await fetch(`/api/campamentos/${campamentoActualId}/comidas/${comidaId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    await verComidasDelDia(fechaSeleccionada);
+                    cargarCuadrante();
+                } else {
+                    alert("Error al intentar eliminar la comida.");
+                }
+            } catch (error) {
+                console.error("Error al eliminar la comida:", error);
+            }
+        }
+
+        /* --- PESTAÑAS --- */
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(tabId).classList.remove('hidden');
+            const btn = document.getElementById('btn-' + tabId);
+            if (btn) btn.classList.add('active');
+
+            if (tabId === 'tab-cuadrante' && campamentoActualId) cargarCuadrante();
+            if (tabId === 'tab-info') cargarInfo(); // <-- Carga info.html al cambiar a esta pestaña
+        }
+
+        /* --- CARGAR DOCUMENTO EXTERNO INFO.HTML --- */
+        async function cargarInfo() {
+            const contenedor = document.getElementById('contenidoInfo');
+            try {
+                const response = await fetch('/info.html');
+                if (!response.ok) throw new Error("No se encontró info.html");
+                const html = await response.text();
+                contenedor.innerHTML = html;
+            } catch (error) {
+                console.error("Error al cargar info.html:", error);
+                contenedor.innerHTML = `
+                    <div class="p-4 bg-red-50 text-red-700 rounded-lg text-sm border border-red-200">
+                        ❌ No se pudo cargar el archivo <code>info.html</code>. Asegúrate de que existe en la misma carpeta.
+                    </div>`;
+            }
+        }
+
+        /* --- CAMPAMENTOS --- */
+        async function cargarCampamentos() {
+            try {
+                const res = await fetch('/api/campamentos');
+                if (res.ok) campamentos = await res.json();
+            } catch (e) {
+                console.error("Error cargando campamentos", e);
+            }
+            actualizarSelectCampamentosHeader();
+            renderCampamentos();
+        }
+
+        function actualizarSelectCampamentosHeader() {
+            const sel = document.getElementById('selectCampamento');
+            sel.innerHTML = '<option value="">-- Selecciona un Campamento --</option>';
+            campamentos.forEach(c => {
+                sel.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
+            });
+            if (campamentoActualId) sel.value = campamentoActualId;
+        }
+
+        function renderCampamentos() {
+            const query = (document.getElementById('searchCampamento').value || '').toLowerCase();
+            const grid = document.getElementById('gridCampamentos');
+            grid.innerHTML = '';
+
+            const filtrados = campamentos.filter(c => c.nombre.toLowerCase().includes(query));
+
+            if (filtrados.length === 0) {
+                grid.innerHTML = `<p class="col-span-full text-slate-400 text-sm text-center py-8">No se encontraron campamentos.</p>`;
+                return;
+            }
+
+            filtrados.forEach(c => {
+                const esSeleccionado = c.id == campamentoActualId;
+                grid.innerHTML += `
+                    <div class="border ${esSeleccionado ? 'border-emerald-500 bg-emerald-50/30' : 'border-slate-200 bg-white'} p-4 rounded-xl shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-bold text-slate-800 text-base">${c.nombre}</h3>
+                                ${esSeleccionado ? '<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Activo</span>' : ''}
+                            </div>
+                            <p class="text-xs text-slate-500 mb-4">📅 ${c.fecha_inicio} al ${c.fecha_fin}</p>
+                        </div>
+                        <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+                            <button onclick="seleccionarCampamento(${c.id})" class="flex-1 bg-emerald-700 hover:bg-emerald-800 text-white text-xs py-2 rounded-lg font-semibold">
+                                ${esSeleccionado ? '✓ En Uso' : '🎯 Seleccionar'}
+                            </button>
+                            <button onclick="editarCampamento(${c.id})" class="bg-slate-100 hover:bg-slate-200 text-slate-700 p-2 rounded-lg text-xs font-medium">✏️</button>
+                            <button onclick="eliminarCampamento(${c.id})" class="bg-red-50 hover:bg-red-100 text-red-600 p-2 rounded-lg text-xs font-medium">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function seleccionarCampamento(id) {
+            campamentoActualId = id;
+            document.getElementById('selectCampamento').value = id;
+
+            document.getElementById('censoNoCamp').classList.add('hidden');
+            document.getElementById('censoContenido').classList.remove('hidden');
+            document.getElementById('cuadranteNoCamp').classList.add('hidden');
+            document.getElementById('cuadranteContenido').classList.remove('hidden');
+
+            renderCampamentos();
+            cambiarCampamento();
+            switchTab('tab-censo');
+        }
+
+        function cambiarCampamentoDesdeSelect() {
+            const val = document.getElementById('selectCampamento').value;
+            if (val) {
+                seleccionarCampamento(val);
+            } else {
+                campamentoActualId = null;
+                document.getElementById('censoNoCamp').classList.remove('hidden');
+                document.getElementById('censoContenido').classList.add('hidden');
+                document.getElementById('cuadranteNoCamp').classList.remove('hidden');
+                document.getElementById('cuadranteContenido').classList.add('hidden');
+                renderCampamentos();
+            }
+        }
+
+        async function cambiarCampamento() {
+            if (!campamentoActualId) return;
+            const res = await fetch(`/api/campamentos/${campamentoActualId}/dias`);
+            if (!res.ok) return;
+            const fechas = await res.json();
+
+            const selCenso = document.getElementById('selectFechaCenso');
+            if (selCenso) {
+                selCenso.innerHTML = fechas.map(f => `<option value="${f}">${f}</option>`).join('');
+                cargarCensoDia();
+            }
+
+            const selMenuFecha = document.getElementById('menuFecha');
+            if (selMenuFecha) {
+                selMenuFecha.innerHTML = fechas.map(f => `<option value="${f}">${f}</option>`).join('');
+            }
+
+            cargarCuadrante();
+        }
+
+        function abrirModalCampamento() {
+            editandoCampamentoId = null;
+            document.getElementById('tituloModalCampamento').innerText = 'Nuevo Campamento';
+            document.getElementById('campNombre').value = '';
+            document.getElementById('campInicio').value = '';
+            document.getElementById('campFin').value = '';
+            document.getElementById('modalCampamento').classList.remove('hidden');
+        }
+
+        function cerrarModalCampamento() {
+            document.getElementById('modalCampamento').classList.add('hidden');
+        }
+
+        async function guardarCampamentoModal() {
+            const nombre = document.getElementById('campNombre').value;
+            const inicio = document.getElementById('campInicio').value;
+            const fin = document.getElementById('campFin').value;
+
+            if (!nombre || !inicio || !fin) {
+                alert('Por favor, rellena todos los campos.');
+                return;
+            }
+
+            const payload = { nombre, fecha_inicio: inicio, fecha_fin: fin };
+
+            try {
+                if (editandoCampamentoId) {
+                    await fetch(`/api/campamentos/${editandoCampamentoId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    await fetch('/api/campamentos', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                }
+                cerrarModalCampamento();
+                await cargarCampamentos();
+            } catch (e) {
+                console.error("Error guardando campamento:", e);
+            }
+        }
+
+        function editarCampamento(id) {
+            const c = campamentos.find(item => item.id == id);
+            if (!c) return;
+            editandoCampamentoId = id;
+            document.getElementById('tituloModalCampamento').innerText = 'Editar Campamento';
+            document.getElementById('campNombre').value = c.nombre;
+            document.getElementById('campInicio').value = c.fecha_inicio;
+            document.getElementById('campFin').value = c.fecha_fin;
+            document.getElementById('modalCampamento').classList.remove('hidden');
+        }
+
+        async function eliminarCampamento(id) {
+            if (!confirm('¿Seguro que deseas eliminar este campamento?')) return;
+            try {
+                await fetch(`/api/campamentos/${id}`, { method: 'DELETE' });
+                if (campamentoActualId == id) {
+                    campamentoActualId = null;
+                    document.getElementById('selectCampamento').value = '';
+                }
+                await cargarCampamentos();
+            } catch (e) {
+                console.error("Error eliminando campamento:", e);
+            }
+        }
+
+        /* --- CENSO DIARIO --- */
+        async function cargarRamas() {
+            try {
+                const res = await fetch('/api/ramas');
+                if (res.ok) ramas = await res.json();
+            } catch (e) {
+                console.error("Error al cargar ramas:", e);
+            }
+            actualizarSelectRamasMenu();
+        }
+
+        function actualizarSelectRamasMenu() {
+            const sel = document.getElementById('menuRama');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">Todo el Campamento</option>';
+            ramas.forEach(r => {
+                sel.innerHTML += `<option value="${r.id}">${r.nombre}</option>`;
+            });
+        }
+
+        function toggleTomasAusentes(checkboxSalida) {
+            const tr = checkboxSalida.closest('tr');
+            const checkboxesTomas = tr.querySelectorAll('.censo-ausencia');
+            checkboxesTomas.forEach(cb => {
+                cb.disabled = !checkboxSalida.checked;
+                if (!checkboxSalida.checked) {
+                    cb.checked = false;
+                }
+                const label = cb.closest('label');
+                if (label) {
+                    if (!checkboxSalida.checked) {
+                        label.classList.add('opacity-40', 'cursor-not-allowed');
+                        label.classList.remove('cursor-pointer');
+                    } else {
+                        label.classList.remove('opacity-40', 'cursor-not-allowed');
+                        label.classList.add('cursor-pointer');
+                    }
+                }
+            });
+        }
+
+        async function cargarCensoDia() {
+            const fecha = document.getElementById('selectFechaCenso').value;
+            if (!fecha) return;
+            const tbody = document.getElementById('tbodyCenso');
+            tbody.innerHTML = '';
+
+            try {
+                const res = await fetch(`/api/campamentos/${campamentoActualId}/censo/${fecha}`);
+                let censoData = [];
+                if (res.ok) censoData = await res.json();
+
+                ramas.forEach(r => {
+                    const d = censoData.find(item => item.rama_id == r.id) || { num_participantes: 0, num_responsables: 0, esta_de_salida: false, tomas_ausentes: [], alergenos_detalle: {} };
+                    const estaSalida = d.esta_de_salida;
+
+                    tbody.innerHTML += `
+                        <tr data-rama-id="${r.id}">
+                            <td class="p-3 font-semibold text-slate-700">${r.nombre}</td>
+                            <td class="p-3 text-center"><input type="number" min="0" value="${d.num_participantes}" class="w-16 border rounded text-center p-1 censo-chavales"></td>
+                            <td class="p-3 text-center"><input type="number" min="0" value="${d.num_responsables}" class="w-16 border rounded text-center p-1 censo-scouters"></td>
+                            ${['celiaco', 'lactosa', 'otros'].map(a => `<td class="p-3 text-center"><input type="number" min="0" value="${(d.alergenos_detalle || {})[a] || 0}" class="w-14 border rounded text-center p-1 censo-alergeno-${a}"></td>`).join('')}
+                            <td class="p-3 text-center">
+                                <input type="checkbox" ${estaSalida ? 'checked' : ''} onchange="toggleTomasAusentes(this)" class="w-4 h-4 text-emerald-600 rounded censo-salida">
+                            </td>
+                            <td class="p-3">
+                                <div class="flex flex-wrap gap-2 text-xs">
+                                    ${TOMAS.map(t => `
+                                        <label class="inline-flex items-center gap-1 ${!estaSalida ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}">
+                                            <input type="checkbox" value="${t}" ${(d.tomas_ausentes || []).includes(t) ? 'checked' : ''} ${!estaSalida ? 'disabled' : ''} class="censo-ausencia"> ${t}
+                                        </label>
+                                    `).join('')}
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                console.error("Error al cargar censo:", e);
+            }
+        }
+
+        async function guardarCensoDia() {
+            if (!campamentoActualId) return;
+            const fecha = document.getElementById('selectFechaCenso').value;
+            const filas = document.querySelectorAll('#tbodyCenso tr');
+            const datos = [];
+
+            filas.forEach(tr => {
+                const ramaId = parseInt(tr.getAttribute('data-rama-id'));
+                const numPart = parseInt(tr.querySelector('.censo-chavales').value) || 0;
+                const numResp = parseInt(tr.querySelector('.censo-scouters').value) || 0;
+                const estaSalida = tr.querySelector('.censo-salida').checked;
+                const tomasAusentes = [];
+                tr.querySelectorAll('.censo-ausencia:checked').forEach(cb => {
+                    tomasAusentes.push(cb.value);
+                });
+
+                datos.push({
+                    rama_id: ramaId,
+                    num_participantes: numPart,
+                    num_responsables: numResp,
+                    esta_de_salida: estaSalida,
+                    tomas_ausentes: estaSalida ? tomasAusentes : [],
+                    alergenos_detalle: { celiaco: parseInt(tr.querySelector('.censo-alergeno-celiaco').value) || 0, lactosa: parseInt(tr.querySelector('.censo-alergeno-lactosa').value) || 0, otros: parseInt(tr.querySelector('.censo-alergeno-otros').value) || 0 }
+                });
+            });
+
+            try {
+                const res = await fetch(`/api/campamentos/${campamentoActualId}/censo/${fecha}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+                if (res.ok) {
+                    alert('Censo del día guardado correctamente.');
+                } else {
+                    alert('Error al guardar el censo.');
+                }
+            } catch (e) {
+                console.error('Error al guardar censo:', e);
+            }
+        }
+
+        async function copiarCensoTodosLosDias() {
+            if (!campamentoActualId) return;
+            if (!confirm('¿Copiar la configuración del censo de este día a TODOS los días del campamento?')) return;
+
+            const filas = document.querySelectorAll('#tbodyCenso tr');
+            const datos = [];
+
+            filas.forEach(tr => {
+                const ramaId = parseInt(tr.getAttribute('data-rama-id'));
+                const numPart = parseInt(tr.querySelector('.censo-chavales').value) || 0;
+                const numResp = parseInt(tr.querySelector('.censo-scouters').value) || 0;
+                const estaSalida = tr.querySelector('.censo-salida').checked;
+                const tomasAusentes = [];
+                tr.querySelectorAll('.censo-ausencia:checked').forEach(cb => {
+                    tomasAusentes.push(cb.value);
+                });
+
+                datos.push({
+                    rama_id: ramaId,
+                    num_participantes: numPart,
+                    num_responsables: numResp,
+                    esta_de_salida: estaSalida,
+                    tomas_ausentes: estaSalida ? tomasAusentes : [],
+                    alergenos_detalle: { celiaco: parseInt(tr.querySelector('.censo-alergeno-celiaco').value) || 0, lactosa: parseInt(tr.querySelector('.censo-alergeno-lactosa').value) || 0, otros: parseInt(tr.querySelector('.censo-alergeno-otros').value) || 0 }
+                });
+            });
+
+            try {
+                const res = await fetch(`/api/campamentos/${campamentoActualId}/copiar-censo-todos`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+                if (res.ok) {
+                    alert('Censo copiado con éxito a todos los días.');
+                } else {
+                    alert('Error al copiar el censo.');
+                }
+            } catch (e) {
+                console.error('Error al copiar censo:', e);
+            }
+        }
+
+        /* --- CUADRANTE --- */
+        async function cargarCuadrante() {
+            if (!campamentoActualId) return;
+            const contenedor = document.getElementById('contenedorCuadrante');
+            if (!contenedor) return;
+
+            try {
+                const res = await fetch(`/api/campamentos/${campamentoActualId}/cuadrante`);
+                let cuadranteData = [];
+                if (res.ok) cuadranteData = await res.json();
+
+                let html = `
+                    <table class="w-full text-left border-collapse border border-slate-200 min-w-[750px]">
+                        <thead>
+                            <tr class="bg-slate-800 text-white text-xs">
+                                <th class="p-3 border border-slate-700 w-28">Fecha</th>
+                                ${TOMAS.map(t => `<th class="p-3 border border-slate-700 text-center">${t}</th>`).join('')}
+                                <th class="p-3 border border-slate-700 text-center w-24">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 text-xs">
+                `;
+
+                cuadranteData.forEach(filaDia => {
+                    html += `<tr>
+                        <td class="p-3 font-bold bg-slate-50 border text-slate-700">${filaDia.fecha}</td>`;
+
+                    TOMAS.forEach(toma => {
+                        const infoToma = filaDia.tomas ? filaDia.tomas[toma] : null;
+                        html += `<td class="p-2 border align-top bg-white">`;
+
+                        if (infoToma && typeof infoToma === 'object') {
+                            const platosList = infoToma.platos || [];
+                            if (infoToma.alertas && infoToma.alertas.length) {
+                                const resumen = infoToma.alertas.map(a => `${nombreAlergeno(a.alergeno)} (${a.cantidad})`).join(', ');
+                                html += `<div class="mb-2 p-2 rounded-lg bg-red-50 border border-red-300 text-red-700 text-[10px] font-bold">⚠️ Falta alternativa: ${resumen}</div>`;
+                            }
+                            platosList.forEach(plato => {
+                                const clase = plato.es_alternativa ? 'bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-900' : (plato.tiene_alerta ? 'bg-red-50 hover:bg-red-100 border-red-300 text-red-800' : 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-900');
+                                const etiqueta = plato.es_alternativa ? `🔄 ${nombreAlergeno(plato.para_alergeno)}` : (plato.tiene_alerta ? '⚠️' : '📖');
+                                html += `<div onclick="abrirDetalleRecetaDirecto(${plato.receta_id})" title="Haz clic para ver la ficha técnica" class="mb-1 p-2 ${clase} border rounded shadow-sm cursor-pointer transition flex items-center justify-between group">
+                                    <span class="font-semibold text-xs">${etiqueta} ${plato.prefijo ? plato.prefijo + ' ' : ''}${plato.nombre}</span>
+                                    <span class="text-[10px] opacity-0 group-hover:opacity-100 font-bold ml-1">🔍</span>
+                                </div>`;
+                            });
+                            if (!platosList.length && !(infoToma.alertas || []).length) html += `<div onclick="abrirModal('${filaDia.fecha}')" class="p-2 text-center text-slate-300 italic hover:bg-slate-50 cursor-pointer rounded transition">-</div>`;
+                        } else {
+                            html += `<div onclick="abrirModal('${filaDia.fecha}')" class="p-2 text-center text-slate-300 italic hover:bg-slate-50 cursor-pointer rounded transition">-</div>`;
+                        }
+                        html += `</td>`;
+                    });
+
+                    html += `
+                        <td class="p-2 border text-center align-middle bg-slate-50">
+                            <button onclick="abrirModal('${filaDia.fecha}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1.5 rounded text-[11px] font-semibold flex items-center justify-center gap-1 mx-auto shadow-sm">
+                                ⚙️ Gestionar
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+
+                html += `</tbody></table>`;
+                contenedor.innerHTML = html;
+
+            } catch (e) {
+                console.error("Error al cargar cuadrante:", e);
+                contenedor.innerHTML = `<p class="p-4 text-red-500 text-center">Error al cargar el cuadrante.</p>`;
+            }
+        }
+
+        async function agendarComida() {
+            const fecha = document.getElementById('menuFecha').value;
+            const toma = document.getElementById('menuToma').value;
+            const ramaVal = document.getElementById('menuRama').value;
+            const nombreReceta = document.getElementById('menuRecetaInput').value.trim();
+            const esAlternativa = document.getElementById('menuEsAlternativa').checked;
+            const paraAlergeno = document.getElementById('menuParaAlergeno').value;
+
+            if (!fecha || !nombreReceta) {
+                alert('Por favor selecciona una fecha y busca una receta.');
+                return;
+            }
+
+            // Buscar la receta por su nombre ingresado
+            const recetaObj = recetas.find(r => r.nombre.toLowerCase() === nombreReceta.toLowerCase());
+
+            if (!recetaObj) {
+                alert('La receta ingresada no existe en la base de datos. Selecciona una receta válida.');
+                return;
+            }
+
+            if (esAlternativa && !paraAlergeno) { alert('Selecciona para qué alérgeno es la receta alternativa.'); return; }
+
+            const payload = { toma, receta_id: recetaObj.id, rama_id: ramaVal ? parseInt(ramaVal) : null, es_picnic: false, es_alternativa: esAlternativa, para_alergeno: esAlternativa ? paraAlergeno : null };
+
+            try {
+                const res = await fetch(`/api/campamentos/${campamentoActualId}/comidas/${fecha}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    document.getElementById('menuRecetaInput').value = '';
+                    document.getElementById('menuEsAlternativa').checked = false;
+                    toggleSelectorAlergenoMenu();
+                    await cargarCuadrante();
+                } else {
+                    alert('Error al agendar la comida.');
+                }
+            } catch (e) {
+                console.error('Error al agendar comida:', e);
+            }
+        }
+
+        function descargarPDF(tipo) {
+            if (!campamentoActualId) {
+                alert("Por favor, selecciona un campamento primero.");
+                return;
+            }
+            window.open(`/api/campamentos/${campamentoActualId}/pdf/${tipo}`, '_blank');
+        }
+
+        /* --- INGREDIENTES --- */
+        async function cargarIngredientes() {
+            try {
+                const res = await fetch('/api/ingredientes');
+                if (res.ok) ingredientes = await res.json();
+            } catch (e) {
+                console.error("Error al cargar ingredientes:", e);
+            }
+            renderIngredientes();
+            actualizarSelectIngredientesRecetas();
+        }
+
+        function renderIngredientes() {
+            const query = (document.getElementById('searchIngrediente').value || '').toLowerCase();
+            const lista = document.getElementById('listaIngredientes');
+            lista.innerHTML = '';
+
+            const filtrados = ingredientes.filter(i => i.nombre.toLowerCase().includes(query));
+            document.getElementById('cantIngredientes').innerText = `${filtrados.length} ítems`;
+
+            filtrados.forEach(i => {
+                lista.innerHTML += `
+                    <li class="p-3 flex justify-between items-center hover:bg-slate-50">
+                        <div>
+                            <span class="font-bold text-slate-800">${i.nombre}</span>
+                            <span class="text-xs text-slate-500 block">Unidad: ${i.unidad_medida} | Coste: ${parseFloat(i.coste_unidad || 0).toFixed(2)}€</span><span class="block mt-1">${renderBadges(i.alergenos)}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="editarIngrediente(${i.id})" class="text-xs text-slate-600 hover:text-slate-900 bg-slate-100 p-1.5 rounded">✏️</button>
+                            <button onclick="eliminarIngrediente(${i.id})" class="text-xs text-red-600 hover:text-red-800 bg-red-50 p-1.5 rounded">🗑️</button>
+                        </div>
+                    </li>
+                `;
+            });
+        }
+
+        async function guardarIngrediente() {
+            const nombre = document.getElementById('ingNombre').value.trim();
+            const unidad_medida = document.getElementById('ingUnidad').value.trim();
+            const coste_unidad = parseFloat(document.getElementById('ingCoste').value) || 0;
+
+            if (!nombre || !unidad_medida) {
+                alert('Nombre y unidad de medida son obligatorios.');
+                return;
+            }
+
+            const alergenos = [];
+            if (document.getElementById('ingAlergenoCeliaco').checked) alergenos.push('celiaco');
+            if (document.getElementById('ingAlergenoLactosa').checked) alergenos.push('lactosa');
+            if (document.getElementById('ingAlergenoOtros').checked) alergenos.push('otros');
+            const payload = { nombre, unidad_medida, coste_unidad, alergenos };
+
+            try {
+                if (editandoIngredienteId) {
+                    await fetch(`/api/ingredientes/${editandoIngredienteId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    await fetch('/api/ingredientes', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                }
+                cancelarEdicionIngrediente();
+                await cargarIngredientes();
+            } catch (e) {
+                console.error("Error guardando ingrediente:", e);
+            }
+        }
+
+        function editarIngrediente(id) {
+            const ing = ingredientes.find(i => i.id == id);
+            if (!ing) return;
+            editandoIngredienteId = id;
+            document.getElementById('tituloFormIngrediente').innerText = 'Editar Ingrediente';
+            document.getElementById('ingNombre').value = ing.nombre;
+            document.getElementById('ingUnidad').value = ing.unidad_medida;
+            document.getElementById('ingCoste').value = ing.coste_unidad;
+            const ingAl = ing.alergenos || [];
+            document.getElementById('ingAlergenoCeliaco').checked = ingAl.includes('celiaco');
+            document.getElementById('ingAlergenoLactosa').checked = ingAl.includes('lactosa');
+            document.getElementById('ingAlergenoOtros').checked = ingAl.includes('otros');
+            document.getElementById('btnGuardarIngrediente').innerText = 'Guardar Cambios';
+            document.getElementById('btnCancelarIngrediente').classList.remove('hidden');
+        }
+
+        function cancelarEdicionIngrediente() {
+            editandoIngredienteId = null;
+            document.getElementById('tituloFormIngrediente').innerText = 'Añadir Ingrediente';
+            document.getElementById('ingNombre').value = '';
+            document.getElementById('ingUnidad').value = '';
+            document.getElementById('ingCoste').value = '';
+            document.getElementById('ingAlergenoCeliaco').checked = false;
+            document.getElementById('ingAlergenoLactosa').checked = false;
+            document.getElementById('ingAlergenoOtros').checked = false;
+            document.getElementById('btnGuardarIngrediente').innerText = '+ Crear Ingrediente';
+            document.getElementById('btnCancelarIngrediente').classList.add('hidden');
+        }
+
+        async function eliminarIngrediente(id) {
+            if (!confirm('¿Eliminar ingrediente?')) return;
+            try {
+                await fetch(`/api/ingredientes/${id}`, { method: 'DELETE' });
+                await cargarIngredientes();
+            } catch (e) {
+                console.error("Error eliminando ingrediente:", e);
+            }
+        }
+
+        function actualizarSelectIngredientesRecetas() {
+            const sel = document.getElementById('recSelectIng');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">Selecciona ingrediente...</option>';
+            ingredientes.forEach(i => {
+                sel.innerHTML += `<option value="${i.id}">${i.nombre} (${i.unidad_medida})</option>`;
+            });
+        }
+
+        /* --- RECETAS --- */
+        async function cargarRecetas() {
+            try {
+                const res = await fetch('/api/recetas');
+                if (res.ok) recetas = await res.json();
+            } catch (e) {
+                console.error("Error al cargar recetas:", e);
+            }
+            renderRecetas();
+            actualizarSelectRecetasCuadrante();
+        }
+
+        function actualizarSelectRecetasCuadrante() {
+            const list = document.getElementById('menuRecetaList');
+            if (!list) return;
+            list.innerHTML = '';
+            recetas.forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r.nombre;
+                list.appendChild(opt);
+            });
+        }
+
+        function renderRecetas() {
+            const query = (document.getElementById('searchReceta').value || '').toLowerCase();
+            const grid = document.getElementById('gridRecetas');
+            grid.innerHTML = '';
+
+            const filtradas = recetas.filter(r => r.nombre.toLowerCase().includes(query));
+            document.getElementById('cantRecetas').innerText = `${filtradas.length} recetas`;
+
+            filtradas.forEach(r => {
+                grid.innerHTML += `
+                    <div class="border border-slate-200 p-4 rounded-xl bg-white shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-bold text-slate-800 text-base cursor-pointer hover:text-emerald-700" onclick="abrirModalDetalleReceta(${r.id})">${r.nombre}</h4>
+                                <span class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded">${r.porciones_base} raciones</span>
+                                ${r.alergenos && r.alergenos.length ? `<div class="flex flex-wrap gap-1 justify-end mt-1">${renderBadges(r.alergenos)}</div>` : '<span class="text-[10px] text-slate-400">Sin alérgenos</span>'}
+                            </div>
+                            <p class="text-xs text-slate-500 line-clamp-2">${r.instrucciones || 'Sin instrucciones'}</p>
+                        </div>
+                        <div class="flex justify-end gap-2 pt-3 mt-3 border-t border-slate-100">
+                            <button onclick="abrirModalDetalleReceta(${r.id})" class="text-xs bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded font-semibold">👁️ Ver</button>
+                            <button onclick="editarReceta(${r.id})" class="text-xs bg-slate-100 text-slate-700 px-3 py-1.5 rounded font-semibold">✏️ Editar</button>
+                            <button onclick="eliminarReceta(${r.id})" class="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded font-semibold">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function agregarIngredienteARecetaTemp() {
+            const ingId = parseInt(document.getElementById('recSelectIng').value);
+            const cant = parseFloat(document.getElementById('recCantIng').value);
+
+            if (!ingId || !cant || cant <= 0) {
+                alert('Selecciona un ingrediente y una cantidad válida.');
+                return;
+            }
+
+            const ing = ingredientes.find(i => i.id === ingId);
+            if (!ing) return;
+
+            tempIngredientesReceta.push({
+                ingrediente_id: ing.id,
+                nombre: ing.nombre,
+                cantidad_base: cant,
+                unidad: ing.unidad_medida
+            });
+
+            renderTempIngredientesReceta();
+            document.getElementById('recCantIng').value = '';
+        }
+
+        function renderTempIngredientesReceta() {
+            const ul = document.getElementById('listaTempIngReceta');
+            ul.innerHTML = '';
+            tempIngredientesReceta.forEach((item, index) => {
+                ul.innerHTML += `
+                    <li class="flex justify-between items-center py-1 border-b border-slate-100">
+                        <span>${item.nombre}: <strong>${item.cantidad_base} ${item.unidad}</strong></span>
+                        <button onclick="eliminarTempIngReceta(${index})" class="text-red-500 font-bold text-xs">✕</button>
+                    </li>
+                `;
+            });
+        }
+
+        function eliminarTempIngReceta(index) {
+            tempIngredientesReceta.splice(index, 1);
+            renderTempIngredientesReceta();
+        }
+
+        async function guardarReceta() {
+            const nombre = document.getElementById('recNombre').value.trim();
+            const porciones_base = parseInt(document.getElementById('recPorciones').value) || 10;
+            const instrucciones = document.getElementById('recInstrucciones').value.trim();
+            const alergenos = [];
+            if (document.getElementById('recAlergenoCeliaco').checked) alergenos.push('celiaco');
+            if (document.getElementById('recAlergenoLactosa').checked) alergenos.push('lactosa');
+            if (document.getElementById('recAlergenoOtros').checked) alergenos.push('otros');
+
+            if (!nombre) {
+                alert('El nombre de la receta es obligatorio.');
+                return;
+            }
+
+            const payload = {
+                nombre,
+                porciones_base,
+                instrucciones,
+                alergenos,
+                ingredientes: tempIngredientesReceta.map(item => ({
+                    ingrediente_id: item.ingrediente_id,
+                    cantidad_base: item.cantidad_base
+                }))
+            };
+
+            try {
+                if (editandoRecetaId) {
+                    await fetch(`/api/recetas/${editandoRecetaId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    await fetch('/api/recetas', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                }
+                cancelarEdicionReceta();
+                await cargarRecetas();
+            } catch (e) {
+                console.error("Error guardando receta:", e);
+            }
+        }
+
+        function editarReceta(id) {
+            const r = recetas.find(item => item.id == id);
+            if (!r) return;
+
+            editandoRecetaId = id;
+            document.getElementById('tituloFormReceta').innerText = 'Editar Receta';
+            document.getElementById('recNombre').value = r.nombre;
+            document.getElementById('recPorciones').value = r.porciones_base;
+            document.getElementById('recInstrucciones').value = r.instrucciones || '';
+            const recAl = r.alergenos || [];
+            document.getElementById('recAlergenoCeliaco').checked = recAl.includes('celiaco');
+            document.getElementById('recAlergenoLactosa').checked = recAl.includes('lactosa');
+            document.getElementById('recAlergenoOtros').checked = recAl.includes('otros');
+
+            tempIngredientesReceta = (r.ingredientes || []).map(ing => ({
+                ingrediente_id: ing.ingrediente_id,
+                nombre: ing.ingrediente,
+                cantidad_base: ing.cantidad_base,
+                unidad: ing.unidad
+            }));
+
+            renderTempIngredientesReceta();
+            document.getElementById('btnGuardarReceta').innerText = 'Guardar Cambios';
+            document.getElementById('btnCancelarReceta').classList.remove('hidden');
+        }
+
+        function cancelarEdicionReceta() {
+            editandoRecetaId = null;
+            document.getElementById('tituloFormReceta').innerText = 'Crear Receta';
+            document.getElementById('recNombre').value = '';
+            document.getElementById('recPorciones').value = 10;
+            document.getElementById('recInstrucciones').value = '';
+            document.getElementById('recAlergenoCeliaco').checked = false;
+            document.getElementById('recAlergenoLactosa').checked = false;
+            document.getElementById('recAlergenoOtros').checked = false;
+            tempIngredientesReceta = [];
+            renderTempIngredientesReceta();
+            document.getElementById('btnGuardarReceta').innerText = 'Guardar Receta';
+            document.getElementById('btnCancelarReceta').classList.add('hidden');
+        }
+
+        async function eliminarReceta(id) {
+            if (!confirm('¿Eliminar esta receta?')) return;
+            try {
+                await fetch(`/api/recetas/${id}`, { method: 'DELETE' });
+                await cargarRecetas();
+            } catch (e) {
+                console.error("Error eliminando receta:", e);
+            }
+        }
+
+        function abrirModalDetalleReceta(id) {
+            const r = recetas.find(item => item.id == id);
+            if (!r) {
+                alert("No se encontró el detalle de esta receta.");
+                return;
+            }
+
+            document.getElementById('detRecetaNombre').innerText = r.nombre;
+            document.getElementById('detRecetaPorciones').innerHTML = `Raciones Base: ${r.porciones_base} <span class="ml-2">${renderBadges(r.alergenos)}</span>`;
+
+            const ul = document.getElementById('detRecetaIngredientes');
+            ul.innerHTML = '';
+            if (r.ingredientes && r.ingredientes.length > 0) {
+                r.ingredientes.forEach(ing => {
+                    const badges = renderBadges(ing.alergenos || []);
+                    ul.innerHTML += `<li class="py-1">• <strong>${ing.ingrediente}</strong>: ${ing.cantidad_base} ${ing.unidad}${badges ? `<div class="ml-4 mt-1">${badges}</div>` : ''}</li>`;
+                });
+            } else {
+                ul.innerHTML = '<li class="text-slate-400 italic">Sin ingredientes registrados.</li>';
+            }
+
+            document.getElementById('detRecetaInstrucciones').innerText = r.instrucciones || 'Sin instrucciones especificadas.';
+            document.getElementById('modalRecetaDetalle').classList.remove('hidden');
+        }
+
+        function cerrarModalDetalleReceta() {
+            document.getElementById('modalRecetaDetalle').classList.add('hidden');
+        }
+
+        /* --- IMPORTACIÓN / EXPORTACIÓN --- */
+        function exportarBaseDatos() {
+            window.open('/api/database/export', '_blank');
+        }
+
+        function abrirModalImportar() {
+            document.getElementById('archivoImportar').value = '';
+            document.getElementById('modalImportar').classList.remove('hidden');
+        }
+
+        function cerrarModalImportar() {
+            document.getElementById('modalImportar').classList.add('hidden');
+        }
+
+        async function ejecutarImportacion() {
+            const inputArchivo = document.getElementById('archivoImportar');
+            if (!inputArchivo.files || inputArchivo.files.length === 0) {
+                alert('Por favor, selecciona un archivo JSON para importar.');
+                return;
+            }
+
+            const modo = document.querySelector('input[name="modoImportar"]:checked').value;
+
+            if (modo === 'overwrite') {
+                if (!confirm('⚠️ ¡ATENCIÓN! Se borrarán TODOS los datos actuales de la aplicación. ¿Deseas continuar?')) {
+                    return;
+                }
+            }
+
+            const formData = new FormData();
+            formData.append('file', inputArchivo.files[0]);
+            formData.append('modo', modo);
+
+            try {
+                const response = await fetch('/api/database/import', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('✅ Importación completada con éxito.');
+                    cerrarModalImportar();
+                    await init();
+                    if (campamentoActualId) {
+                        await cambiarCampamento();
+                    }
+                } else {
+                    alert('❌ Error al importar: ' + (result.detail || 'Ocurrió un error inesperado.'));
+                }
+            } catch (error) {
+                console.error('Error en la importación:', error);
+                alert('❌ Error al conectar con el servidor.');
+            }
+        }
+
+        const ALERGENOS = { celiaco: '🚫 Celíaco / gluten', lactosa: '🥛 Lactosa', otros: '⚠️ Otros' };
+        function nombreAlergeno(a) { return ALERGENOS[a] || a; }
+        function renderBadges(alergenos) { if (!alergenos || !alergenos.length) return ''; return alergenos.map(a => `<span class="alergeno-badge bg-red-50 text-red-700 border-red-200">${nombreAlergeno(a)}</span>`).join(''); }
+        function toggleSelectorAlergenoMenu() { const activo = document.getElementById('menuEsAlternativa').checked; const sel = document.getElementById('menuParaAlergeno'); sel.disabled = !activo; sel.classList.toggle('opacity-50', !activo); if (!activo) sel.value = ''; }
+        function verificarAlertaAlergenos(fecha, toma, censoDia, comidasToma) {
+            const requeridos = {}; (censoDia || []).forEach(c => { if (!c.tomas_ausentes || !c.tomas_ausentes.includes(toma)) Object.entries(c.alergenos_detalle || {}).forEach(([a, n]) => { if (Number(n) > 0) requeridos[a] = (requeridos[a] || 0) + Number(n); }); });
+            const cubiertos = new Set(); (comidasToma || []).forEach(c => (c.platos || []).forEach(p => { if (p.es_alternativa && p.para_alergeno) cubiertos.add(p.para_alergeno); }));
+            const faltantes = Object.entries(requeridos).filter(([a]) => !cubiertos.has(a)).map(([a, n]) => `${nombreAlergeno(a)} (${n})`);
+            return { requiereAlerta: faltantes.length > 0, faltantes };
+        }
+
+    </script>
+</body>
+
+</html>
